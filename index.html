@@ -103,7 +103,7 @@
   .photo-circle img{width:100%;height:100%;object-fit:cover}
   .photo-placeholder{font-size:32px;color:rgba(255,255,255,.5)}
   .person-info{flex:1;min-width:0}
-  .person-name{font-family:'DM Serif Display',serif;font-size:22px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .person-name{font-family:'DM Sans',sans-serif;font-weight:700;font-size:22px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .person-cargo{font-size:13px;color:rgba(255,255,255,.65);margin-top:3px}
   .person-tags{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
   .tag{background:rgba(255,255,255,.1);border-radius:20px;padding:3px 10px;font-size:11px;color:rgba(255,255,255,.8);font-weight:500}
@@ -125,10 +125,10 @@
   .nb-cell{height:64px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;font-size:9px;text-align:center;padding:4px}
   .nb-cell-label{font-size:9px;font-weight:600;line-height:1.2;opacity:.7}
   .nb-marker{width:22px;height:22px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:2}
-  .nb-marker-star{width:26px;height:26px;background:linear-gradient(135deg,#ff6a3d,#ff2e01)!important;font-size:15px;box-shadow:0 0 0 3px rgba(255,46,1,.3),0 2px 8px rgba(0,0,0,.3);animation:starPulse 1.8s ease-in-out infinite}
+  .nb-marker-star{width:26px;height:26px;background:linear-gradient(135deg,#f4a261,#e76f51)!important;font-size:15px;box-shadow:0 0 0 3px rgba(244,162,97,.35),0 2px 8px rgba(0,0,0,.3);animation:starPulse 1.8s ease-in-out infinite}
   @keyframes starPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
   .nb-cell.active{box-shadow:inset 0 0 0 2px var(--navy)}.nb-cell.active-ant{box-shadow:inset 0 0 0 2px rgba(0,0,0,.3)}
-  .nb-ins{background:#e6e4e0}.nb-pleno{background:#efeadd}.nb-pot{background:#dedad2}.nb-forte{background:#e9e2d3}.nb-excep{background:#ffdfd7}
+  .nb-ins{background:#fde8e8}.nb-pleno{background:#dbeafe}.nb-pot{background:#fef3c7}.nb-forte{background:#d1fae5}.nb-excep{background:#ede9fe}
   .nb-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
   .nb-legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--gray-700)}
   .nb-legend-dot{width:12px;height:12px;border-radius:50%;border:2px solid #fff}
@@ -179,11 +179,11 @@
   .header-logo-img{height:26px;width:auto;display:block}
 
   /* ---- Régua de avaliação (rodapé do card, largura total) ---- */
-  .regua-incard{grid-column:1 / -1;border-top:1px solid var(--gray-100);padding:18px 20px}
-  .regua-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-  .regua-card{display:flex;flex-direction:column;gap:8px}
-  .regua-card-top{border-radius:10px;padding:14px 12px;font-weight:700;font-size:14px;color:#fff;min-height:62px;display:flex;align-items:center;line-height:1.2}
-  .regua-card-desc{font-size:11.5px;color:var(--gray-700);line-height:1.45}
+  .regua-incard{grid-column:1 / -1;border-top:1px solid var(--gray-100);padding:14px 20px}
+  .regua-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .regua-card{display:flex;flex-direction:column;gap:5px}
+  .regua-card-top{border-radius:8px;padding:8px 10px;font-weight:700;font-size:11.5px;color:#fff;display:flex;align-items:center;line-height:1.15}
+  .regua-card-desc{font-size:10px;color:var(--gray-700);line-height:1.35}
   .r1{background:linear-gradient(135deg,#2e2e2e,#1a1a1a)}
   .r2{background:linear-gradient(135deg,#5c5c5c,#474747)}
   .r3{background:linear-gradient(135deg,#8a847a,#726c62)}
@@ -661,7 +661,7 @@ function renderReconPanel(report){
 
 /* ----- helpers de exibição ----- */
 function dotClass(v){ if(v==null)return'dot-null'; if(v<=2)return'dot-1'; if(v===3)return'dot-3'; if(v===4)return'dot-4'; return'dot-5'; }
-var NB_CONFIG={'Insuficiente':{color:'#1a1a1a',icon:'⚠️',bg:'#e6e4e0'},'Pleno':{color:'#726c62',icon:'✅',bg:'#efeadd'},'Potencial a Desenvolver':{color:'#a8481f',icon:'🌱',bg:'#f3e6dd'},'Forte Desempenho':{color:'#5c564d',icon:'⭐',bg:'#e9e2d3'},'Excepcional':{color:'#ff2e01',icon:'🏆',bg:'#ffdfd7'}};
+var NB_CONFIG={'Insuficiente':{color:'#c1121f',icon:'⚠️',bg:'#fde8e8'},'Pleno':{color:'#457b9d',icon:'✅',bg:'#dbeafe'},'Potencial a Desenvolver':{color:'#f4a261',icon:'🌱',bg:'#fef3c7'},'Forte Desempenho':{color:'#2d6a4f',icon:'⭐',bg:'#d1fae5'},'Excepcional':{color:'#6a0572',icon:'🏆',bg:'#ede9fe'}};
 var NB_RANK={'Insuficiente':1,'Potencial a Desenvolver':2,'Pleno':3,'Forte Desempenho':4,'Excepcional':5};
 function getCellKey(e,v){ if(e==null||v==null)return null; var E=e<=2?1:e===3?2:3; var V=v<=2?1:v===3?2:3; return E+'-'+V; }
 var CELL_MAP={'1-3':'cell-1-4','2-3':'cell-2-4','3-3':'cell-3-4','1-2':'cell-1-3','2-2':'cell-2-3','3-2':'cell-3-3','1-1':'cell-1-1','2-1':'cell-2-1','3-1':'cell-3-1'};
@@ -911,17 +911,6 @@ document.getElementById('recon-body').addEventListener('change',function(e){
     'Nota entregas - Gestor','Encantar o Cliente - Gestor','Sede por Resultados - Gestor',
     'Nós pela Yandeh - Gestor','Inovar para Liderar - Gestor','Ser Dono - Gestor',
     'Melhor e Mais longe com Dados - Gestor','Nota Final - Valores - Gestor','NINE BOX POSIÇÃO'
-  ];
-  // 2 linhas de exemplo (% posição na faixa vem como decimal: 0,916 = 91,6%)
-  var TEMPLATE_ROWS = [
-    ['YANDEH S.A','Ana Carolina Gomes de Oliveira','Luana Lopes da Silva','2 ANOS, 2 MESES','SAC','ANALISTA JR',
-     0.916,'Sem alteração',3,3,'Pleno',
-     4,4,4,5,4,5,4,4,
-     3,3,3,4,3,3,3,3,'Pleno'],
-    ['GIROTRADE S/A','João da Silva','Cristóvão da Silva','1 ANOS, 0 MESES','PICKING','CONFERENTE PL',
-     1.0,'Mérito',3,4,'Forte Desempenho',
-     3,3,3,4,3,3,3,3,
-     4,4,4,4,4,4,4,4,'Forte Desempenho']
   ];
   document.getElementById('btn-template').addEventListener('click',function(ev){
     ev.preventDefault();
