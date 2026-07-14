@@ -234,7 +234,7 @@
 </div>
 
 <div class="teach">
-  <b>Como funciona:</b> suba a planilha no mesmo formato do template (uma linha por pessoa, com a coluna <b>NOME</b>). O arquivo é lido localmente no seu navegador — nada sai do computador. Depois aponte a pasta de fotos, onde cada imagem tem o nome da pessoa no arquivo (ex.: <i>Ana Carolina Oliveira.jpg</i>). O sistema relaciona nome ↔ foto sozinho e mostra na <b>Conferência</b> o que precisar da sua decisão.
+  <b>Como funciona:</b> suba a planilha no mesmo formato do template (uma linha por pessoa, com a coluna <b>NOME</b>). O arquivo é lido localmente no seu navegador. Depois selecione a pasta de fotos, onde cada imagem deverá ter o nome das pessoas no arquivo (ex.: <i>Ana Carolina Oliveira.jpg</i>). O sistema relaciona nome ↔ foto sozinho e mostra na <b>Conferência</b> o fotos que não foram encontradas ou que não têm correspondência.
 </div>
 
 <div class="loader">
@@ -967,29 +967,30 @@ document.getElementById('recon-body').addEventListener('change',function(e){
 
 /* ----- botão baixar template: gera o XLSX na hora via SheetJS (mesmo cabeçalho padrão) ----- */
 (function(){
-  // 28 colunas (A..AB) na ordem exata do cabeçalho padrão
+  // Colunas na ordem do cabeçalho padrão (movimentação agrupada logo após TIPO DE REAJUSTE)
   var TEMPLATE_HEADER = [
     'EMPRESA','NOME','GESTÃO','DATA DE ADMISSÃO','ÁREA','AGRUPAMENTO',
-    '% POSICIONAMENTO NA FAIXA','TIPO DE REAJUSTE',
+    '% POSICIONAMENTO NA FAIXA','TIPO DE REAJUSTE','DATA DA MOVIMENTAÇÃO','PERCENTUAL',
     'VALORES ÚLT. CICLO (H2/25)','ENTREGA ÚLT. CICLO (H2/25)','CONCEITO ÚLT. CICLO (H2/25)',
     'Auto AVD - Nota Entregas','Auto AVD - Encantar o Cliente','Auto AVD - Sede por Resultados',
     'Auto AVD - Nós pela Yandeh','Auto AVD - Inovar para Liderar','Auto AVD - Ser Dono',
     'Auto AVD - Melhor e Mais longe com Dados','Auto AVD - Nota Final - Valores',
     'Nota entregas - Gestor','Encantar o Cliente - Gestor','Sede por Resultados - Gestor',
     'Nós pela Yandeh - Gestor','Inovar para Liderar - Gestor','Ser Dono - Gestor',
-    'Melhor e Mais longe com Dados - Gestor','Nota Final - Valores - Gestor','NINE BOX POSIÇÃO',
-    'DATA DA MOVIMENTAÇÃO','PERCENTUAL'
+    'Melhor e Mais longe com Dados - Gestor','Nota Final - Valores - Gestor','NINE BOX POSIÇÃO'
   ];
-  // 2 linhas de exemplo (% posição na faixa e % de aumento vêm como decimal: 0,916 = 91,6%)
+  // 2 linhas de exemplo (% posição na faixa e percentual de reajuste vêm como decimal: 0,916 = 91,6%)
   var TEMPLATE_ROWS = [
     ['YANDEH S.A','Ana Carolina Gomes de Oliveira','Luana Lopes da Silva','12/05/2023','SAC','ANALISTA JR',
-     0.916,'Promoção',3,3,'Pleno',
+     0.916,'Promoção','15/03/2025',0.08,
+     3,3,'Pleno',
      4,4,4,5,4,5,4,4,
-     3,3,3,4,3,3,3,3,'Pleno','15/03/2025',0.08],
+     3,3,3,4,3,3,3,3,'Pleno'],
     ['GIROTRADE S/A','João da Silva','Cristóvão da Silva','01/02/2025','PICKING','CONFERENTE PL',
-     1.0,'Mérito',3,4,'Forte Desempenho',
+     1.0,'Mérito','01/06/2025',0.12,
+     3,4,'Forte Desempenho',
      3,3,3,4,3,3,3,3,
-     4,4,4,4,4,4,4,4,'Forte Desempenho','01/06/2025',0.12]
+     4,4,4,4,4,4,4,4,'Forte Desempenho']
   ];
   document.getElementById('btn-template').addEventListener('click',function(ev){
     ev.preventDefault();
