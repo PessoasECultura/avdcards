@@ -118,6 +118,10 @@
   .dado-val{font-size:12px;font-weight:600;color:var(--gray-900);text-align:right;word-break:break-word}
   .gestor-box{background:var(--gray-50);border-radius:8px;padding:10px 12px;margin-bottom:16px}
   .gestor-label{font-size:10px;color:var(--gray-500);margin-bottom:3px}.gestor-name{font-size:12px;font-weight:600;color:var(--navy)}
+  .mov-row{display:flex;gap:12px;flex-wrap:wrap}
+  .mov-item{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .mov-k{font-size:9.5px;color:var(--gray-500);text-transform:uppercase;letter-spacing:.3px}
+  .mov-v{font-size:12px;font-weight:600;color:var(--gray-900);word-break:break-word}
 
   .col-mid{border-right:1px solid var(--gray-100);padding:20px}
   .nb-col-label{font-size:9px;color:var(--gray-500);text-align:center;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
@@ -311,9 +315,11 @@
       </div>
       <div class="dados-section">
         <div class="section-label">Última Movimentação</div>
-        <div class="dado-row"><span class="dado-key">Data</span><span class="dado-val" id="p-mov-data">—</span></div>
-        <div class="dado-row"><span class="dado-key">Percentual</span><span class="dado-val" id="p-mov-pct">—</span></div>
-        <div class="dado-row"><span class="dado-key">Tipo de reajuste</span><span class="dado-val" id="p-mov-tipo">—</span></div>
+        <div class="mov-row">
+          <div class="mov-item"><span class="mov-k">Data</span><span class="mov-v" id="p-mov-data">—</span></div>
+          <div class="mov-item"><span class="mov-k">Percentual</span><span class="mov-v" id="p-mov-pct">—</span></div>
+          <div class="mov-item"><span class="mov-k">Tipo de reajuste</span><span class="mov-v" id="p-mov-tipo">—</span></div>
+        </div>
       </div>
     </div>
     <div class="col-mid">
@@ -485,6 +491,30 @@ function fmtDate(v){
   return String(v);
 }
 
+/* ----- interpreta uma data (Date do Excel, serial ou texto dd/mm/aaaa) -> objeto Date ----- */
+function parseDate(v){
+  if(v==null||v==='') return null;
+  if(v instanceof Date && !isNaN(v)) return v;
+  if(typeof v==='number' && v>20000 && v<80000){ var d=new Date(Date.UTC(1899,11,30)); d.setUTCDate(d.getUTCDate()+Math.round(v)); return d; }
+  var s=String(v).trim();
+  var m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/); // dd/mm/aaaa (ou - .)
+  if(m){ var yy=+m[3]; if(yy<100) yy+=2000; return new Date(yy,(+m[2])-1,+m[1]); }
+  var d2=new Date(s); return isNaN(d2)?null:d2;
+}
+
+/* ----- tempo de casa: da admissão até hoje -> "X anos, Y meses" ----- */
+function tempoCasa(adm){
+  if(!(adm instanceof Date)||isNaN(adm)) return null;
+  var now=new Date();
+  var months=(now.getFullYear()-adm.getFullYear())*12+(now.getMonth()-adm.getMonth());
+  if(now.getDate()<adm.getDate()) months--;      // ainda não fechou o mês
+  if(months<0) months=0;
+  var y=Math.floor(months/12), mo=months%12, parts=[];
+  if(y>0) parts.push(y+(y===1?' ano':' anos'));
+  parts.push(mo+(mo===1?' mês':' meses'));
+  return parts.join(', ');
+}
+
 /* ----- 6 valores Yandeh: auto (M..R) e gestor (U..Z) no layout padrão.
    key = trecho do cabeçalho p/ casar por palavra-chave; auto/gestor = posição de fallback. ----- */
 var VALORES_YANDEH = [
@@ -543,6 +573,7 @@ function parseSheet(arrayBuffer){
     gestor:  find('GESTAO','GESTOR','LIDER','RESPONS'),
     area:    find('AREA','SETOR','DEPART'),
     tempo:   find('TEMPO'),
+    admissao: find('DATA DE ADMISSAO','DATA ADMISSAO','ADMISSAO','DATA DE ENTRADA','DATA DE CONTRATACAO','CONTRATACAO'),
     agrup:   find('AGRUP','GRUPO','CLUSTER'),
     faixa:   find('POSICIONAMENTO','FAIXA','COMPA'),
     ninebox: find('NINE BOX','NINEBOX','QUADRANTE'),         // AB - nine box atual
@@ -581,7 +612,7 @@ function parseSheet(arrayBuffer){
       nome:String(nome).trim(),
       empresa:get(r,idx.empresa), area:get(r,idx.area),
       gestor:get(r,idx.gestor),
-      tempo_casa:get(r,idx.tempo),
+      tempo_casa:get(r,idx.tempo), admissao:get(r,idx.admissao),
       agrupamento:get(r,idx.agrup), posicao_faixa:normFaixa(get(r,idx.faixa)),
       mov_tipo:get(r,idx.mov_tipo), mov_data:fmtDate(get(r,idx.mov_data)), mov_pct:normPct(get(r,idx.mov_pct)),
       ninebox_atual:get(r,idx.ninebox), ninebox_ant:get(r,idx.ninebox_ant),
@@ -713,7 +744,10 @@ function renderCard(p){
   document.getElementById('p-nome').textContent=p.nome;
   txt('p-agrupamento',p.agrupamento);
   txt('p-gestor',p.gestor); txt('p-area',p.area);
-  document.getElementById('p-tempo').textContent=p.tempo_casa?String(p.tempo_casa).toLowerCase().replace('anos,','a,').replace('meses','m'):'—';
+  var adm=parseDate(p.admissao);
+  document.getElementById('p-tempo').textContent = adm
+    ? tempoCasa(adm)
+    : (p.tempo_casa ? String(p.tempo_casa).toLowerCase().replace('anos,','a,').replace('meses','m') : '—');
   txt('p-empresa2',p.empresa);
   txt('p-mov-tipo',p.mov_tipo); txt('p-mov-data',p.mov_data); txt('p-mov-pct',p.mov_pct);
 
@@ -735,8 +769,8 @@ function renderCard(p){
   var ekA=getCellKey(p.entregas_ant,p.valores_ant);
   if(ekA&&ekA!==ek&&CELL_MAP[ekA]){ var cA=document.getElementById(CELL_MAP[ekA]); cA.classList.add('active-ant'); var mA=document.createElement('div'); mA.className='nb-marker'; mA.style.background='rgba(100,100,100,.7)'; mA.style.width='18px'; mA.style.height='18px'; mA.style.fontSize='8px'; mA.title='Anterior: E'+p.entregas_ant+' V'+p.valores_ant; mA.textContent='·'; cA.appendChild(mA); }
 
-  var nbA=p.ninebox_atual||deriveNinebox(p.entregas_atual,p.valores_atual);
-  var nbP=p.ninebox_ant||deriveNinebox(p.entregas_ant,p.valores_ant);
+  var nbA=deriveNinebox(p.entregas_atual,p.valores_atual)||p.ninebox_atual;
+  var nbP=deriveNinebox(p.entregas_ant,p.valores_ant)||p.ninebox_ant;
   var qdBox=document.getElementById('qd-atual-box');
   if(nbA&&NB_CONFIG[nbA]){ var cf=NB_CONFIG[nbA]; qdBox.style.background=cf.bg; document.getElementById('qd-icon').textContent=cf.icon; var n=document.getElementById('qd-name'); n.textContent=nbA; n.style.color=cf.color; }
   else { qdBox.style.background='var(--gray-50)'; document.getElementById('qd-icon').textContent='📊'; var nn=document.getElementById('qd-name'); nn.textContent='Não avaliado'; nn.style.color='var(--gray-500)'; }
@@ -935,7 +969,7 @@ document.getElementById('recon-body').addEventListener('change',function(e){
 (function(){
   // 28 colunas (A..AB) na ordem exata do cabeçalho padrão
   var TEMPLATE_HEADER = [
-    'EMPRESA','NOME','GESTÃO','TEMPO DE CASA (MES)','ÁREA','AGRUPAMENTO',
+    'EMPRESA','NOME','GESTÃO','DATA DE ADMISSÃO','ÁREA','AGRUPAMENTO',
     '% POSICIONAMENTO NA FAIXA','TIPO DE REAJUSTE',
     'VALORES ÚLT. CICLO (H2/25)','ENTREGA ÚLT. CICLO (H2/25)','CONCEITO ÚLT. CICLO (H2/25)',
     'Auto AVD - Nota Entregas','Auto AVD - Encantar o Cliente','Auto AVD - Sede por Resultados',
@@ -948,11 +982,11 @@ document.getElementById('recon-body').addEventListener('change',function(e){
   ];
   // 2 linhas de exemplo (% posição na faixa e % de aumento vêm como decimal: 0,916 = 91,6%)
   var TEMPLATE_ROWS = [
-    ['YANDEH S.A','Ana Carolina Gomes de Oliveira','Luana Lopes da Silva','2 ANOS, 2 MESES','SAC','ANALISTA JR',
+    ['YANDEH S.A','Ana Carolina Gomes de Oliveira','Luana Lopes da Silva','12/05/2023','SAC','ANALISTA JR',
      0.916,'Promoção',3,3,'Pleno',
      4,4,4,5,4,5,4,4,
      3,3,3,4,3,3,3,3,'Pleno','15/03/2025',0.08],
-    ['GIROTRADE S/A','João da Silva','Cristóvão da Silva','1 ANOS, 0 MESES','PICKING','CONFERENTE PL',
+    ['GIROTRADE S/A','João da Silva','Cristóvão da Silva','01/02/2025','PICKING','CONFERENTE PL',
      1.0,'Mérito',3,4,'Forte Desempenho',
      3,3,3,4,3,3,3,3,
      4,4,4,4,4,4,4,4,'Forte Desempenho','01/06/2025',0.12]
