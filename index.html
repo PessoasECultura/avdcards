@@ -306,8 +306,14 @@
         <div class="faixa-section">
           <div class="faixa-label-row"><span class="faixa-key">% na faixa</span><span class="faixa-pct" id="faixa-pct">—</span></div>
           <div class="faixa-bar-bg"><div class="faixa-bar-fill" id="faixa-bar" style="width:0%"></div></div>
-          <div class="faixa-ticks"><span>80%</span><span>100%</span><span>120%</span></div>
+          <div class="faixa-ticks"><span>80%</span><span>100%</span><span>150%</span></div>
         </div>
+      </div>
+      <div class="dados-section">
+        <div class="section-label">Última Movimentação</div>
+        <div class="dado-row"><span class="dado-key">Data</span><span class="dado-val" id="p-mov-data">—</span></div>
+        <div class="dado-row"><span class="dado-key">Percentual</span><span class="dado-val" id="p-mov-pct">—</span></div>
+        <div class="dado-row"><span class="dado-key">Tipo de reajuste</span><span class="dado-val" id="p-mov-tipo">—</span></div>
       </div>
     </div>
     <div class="col-mid">
@@ -457,6 +463,28 @@ function normFaixa(raw){
   return n.toFixed(1).replace('.',',')+'%';
 }
 
+/* ----- percentual de aumento da movimentação: aceita decimal (0,08) ou já em % (8) ----- */
+function normPct(raw){
+  if(raw==null||raw==='') return null;
+  var s=String(raw);
+  var n=parseFloat(s.replace('%','').replace(',','.'));
+  if(isNaN(n)) return s;
+  if(Math.abs(n)<=2) n*=100;       // veio como razão -> percentual
+  return n.toFixed(1).replace('.',',')+'%';
+}
+
+/* ----- data da movimentação: Date do Excel (cellDates) ou serial ou texto -> "dd/mm/aaaa" ----- */
+function fmtDate(v){
+  if(v==null||v==='') return null;
+  function pad(x){ return (x<10?'0':'')+x; }
+  if(v instanceof Date && !isNaN(v)) return pad(v.getDate())+'/'+pad(v.getMonth()+1)+'/'+v.getFullYear();
+  if(typeof v==='number' && v>20000 && v<80000){ // serial do Excel (fallback se não vier como Date)
+    var d=new Date(Date.UTC(1899,11,30)); d.setUTCDate(d.getUTCDate()+Math.round(v));
+    return pad(d.getUTCDate())+'/'+pad(d.getUTCMonth()+1)+'/'+d.getUTCFullYear();
+  }
+  return String(v);
+}
+
 /* ----- 6 valores Yandeh: auto (M..R) e gestor (U..Z) no layout padrão.
    key = trecho do cabeçalho p/ casar por palavra-chave; auto/gestor = posição de fallback. ----- */
 var VALORES_YANDEH = [
@@ -476,7 +504,7 @@ function makeFinder(head){
 
 /* ----- PARSE da planilha ----- */
 function parseSheet(arrayBuffer){
-  var wb = XLSX.read(arrayBuffer,{type:'array'});
+  var wb = XLSX.read(arrayBuffer,{type:'array',cellDates:true});
   var sheetName = wb.SheetNames.find(function(n){return /base|planilha|geral|dados/i.test(n);}) || wb.SheetNames[0];
   var ws = wb.Sheets[sheetName];
   var rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
@@ -518,6 +546,9 @@ function parseSheet(arrayBuffer){
     agrup:   find('AGRUP','GRUPO','CLUSTER'),
     faixa:   find('POSICIONAMENTO','FAIXA','COMPA'),
     ninebox: find('NINE BOX','NINEBOX','QUADRANTE'),         // AB - nine box atual
+    mov_tipo: find('TIPO DE REAJUSTE','TIPO REAJUSTE','TIPO DE MOVIMENTA','TIPO MOVIMENTA','TIPO'),
+    mov_data: find('DATA DA MOVIMENTA','DATA MOVIMENTA','DATA DO REAJUSTE','DATA REAJUSTE','DATA'),
+    mov_pct:  find('PERCENTUAL DE AUMENTO','PERCENTUAL DE REAJUSTE','% DE AUMENTO','% DE REAJUSTE','% REAJUSTE','AUMENTO','PERCENTUAL'),
   };
   // Nine box do ciclo anterior: K = CONCEITO ÚLT. CICLO (logo após ENTREGA ÚLT.).
   idx.ninebox_ant = find('CONCEITO ULT','CONCEITO'); if(idx.ninebox_ant<0) idx.ninebox_ant = col('K');
@@ -552,6 +583,7 @@ function parseSheet(arrayBuffer){
       gestor:get(r,idx.gestor),
       tempo_casa:get(r,idx.tempo),
       agrupamento:get(r,idx.agrup), posicao_faixa:normFaixa(get(r,idx.faixa)),
+      mov_tipo:get(r,idx.mov_tipo), mov_data:fmtDate(get(r,idx.mov_data)), mov_pct:normPct(get(r,idx.mov_pct)),
       ninebox_atual:get(r,idx.ninebox), ninebox_ant:get(r,idx.ninebox_ant),
       entregas_atual:num(get(r,iEc)), valores_atual:num(get(r,iVc)),
       entregas_ant:num(get(r,iEp)),  valores_ant:num(get(r,iVp)),
@@ -683,6 +715,7 @@ function renderCard(p){
   txt('p-gestor',p.gestor); txt('p-area',p.area);
   document.getElementById('p-tempo').textContent=p.tempo_casa?String(p.tempo_casa).toLowerCase().replace('anos,','a,').replace('meses','m'):'—';
   txt('p-empresa2',p.empresa);
+  txt('p-mov-tipo',p.mov_tipo); txt('p-mov-data',p.mov_data); txt('p-mov-pct',p.mov_pct);
 
   var faixaEl=document.getElementById('faixa-pct'),barEl=document.getElementById('faixa-bar');
   if(p.posicao_faixa){ faixaEl.textContent=p.posicao_faixa; var pct=parseFloat(String(p.posicao_faixa)); if(!isNaN(pct)){ barEl.style.width=Math.min(pct/1.5,100)+'%'; barEl.className='faixa-bar-fill'+(pct>120?' over':''); } }
@@ -903,14 +936,26 @@ document.getElementById('recon-body').addEventListener('change',function(e){
   // 28 colunas (A..AB) na ordem exata do cabeçalho padrão
   var TEMPLATE_HEADER = [
     'EMPRESA','NOME','GESTÃO','TEMPO DE CASA (MES)','ÁREA','AGRUPAMENTO',
-    '% POSICIONAMENTO NA FAIXA','TIPO DE MOVIMENTAÇÃO',
+    '% POSICIONAMENTO NA FAIXA','TIPO DE REAJUSTE',
     'VALORES ÚLT. CICLO (H2/25)','ENTREGA ÚLT. CICLO (H2/25)','CONCEITO ÚLT. CICLO (H2/25)',
     'Auto AVD - Nota Entregas','Auto AVD - Encantar o Cliente','Auto AVD - Sede por Resultados',
     'Auto AVD - Nós pela Yandeh','Auto AVD - Inovar para Liderar','Auto AVD - Ser Dono',
     'Auto AVD - Melhor e Mais longe com Dados','Auto AVD - Nota Final - Valores',
     'Nota entregas - Gestor','Encantar o Cliente - Gestor','Sede por Resultados - Gestor',
     'Nós pela Yandeh - Gestor','Inovar para Liderar - Gestor','Ser Dono - Gestor',
-    'Melhor e Mais longe com Dados - Gestor','Nota Final - Valores - Gestor','NINE BOX POSIÇÃO'
+    'Melhor e Mais longe com Dados - Gestor','Nota Final - Valores - Gestor','NINE BOX POSIÇÃO',
+    'DATA DA MOVIMENTAÇÃO','PERCENTUAL'
+  ];
+  // 2 linhas de exemplo (% posição na faixa e % de aumento vêm como decimal: 0,916 = 91,6%)
+  var TEMPLATE_ROWS = [
+    ['YANDEH S.A','Ana Carolina Gomes de Oliveira','Luana Lopes da Silva','2 ANOS, 2 MESES','SAC','ANALISTA JR',
+     0.916,'Promoção',3,3,'Pleno',
+     4,4,4,5,4,5,4,4,
+     3,3,3,4,3,3,3,3,'Pleno','15/03/2025',0.08],
+    ['GIROTRADE S/A','João da Silva','Cristóvão da Silva','1 ANOS, 0 MESES','PICKING','CONFERENTE PL',
+     1.0,'Mérito',3,4,'Forte Desempenho',
+     3,3,3,4,3,3,3,3,
+     4,4,4,4,4,4,4,4,'Forte Desempenho','01/06/2025',0.12]
   ];
   document.getElementById('btn-template').addEventListener('click',function(ev){
     ev.preventDefault();
