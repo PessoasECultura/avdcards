@@ -109,6 +109,29 @@
   .tag{background:rgba(255,255,255,.1);border-radius:20px;padding:3px 10px;font-size:11px;color:rgba(255,255,255,.8);font-weight:500}
   .tag.empresa{background:rgba(255,46,1,.22);color:#ffb3a3}
 
+  /* ---- indicadores na faixa preta: e-NPS (clima) + Auto/Liderados/Δ (assessment).
+     Só aparecem para quem tem correspondência; sem correspondência, nada é renderizado. ---- */
+  .top-stats{display:flex;align-items:flex-start;flex-wrap:wrap;gap:14px;flex-shrink:0;margin-left:auto}
+  /* cada fonte de dado num quadro com título pequeno na borda (estilo legenda de fieldset):
+     o fundo do título é o próprio --navy da faixa, o que "corta" a linha da borda. */
+  .ts-group{position:relative;border:1px solid rgba(255,255,255,.20);border-radius:10px;padding:14px 6px 10px}
+  .ts-group-t{position:absolute;top:-6px;left:12px;padding:0 6px;background:var(--navy);
+              font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;
+              color:rgba(255,255,255,.5);white-space:nowrap}
+  .ts-group-body{display:flex;align-items:flex-start}
+  .ts-item{display:flex;flex-direction:column;gap:3px;padding:0 14px;border-left:1px solid rgba(255,255,255,.14)}
+  .ts-item:first-child{border-left:none}
+  .ts-k{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45);white-space:nowrap}
+  .ts-v{font-size:18px;font-weight:700;color:#fff;line-height:1;white-space:nowrap}
+  /* delta em evidência sem caixa: só tipografia. O tamanho destaca o número e o
+     rótulo em vermelho é a única "pontuação" de cor — regra da marca. */
+  .ts-delta .ts-k{color:#ff5436}
+  .ts-delta-v{font-size:24px;font-weight:700;color:#fff;line-height:.85;letter-spacing:-.8px;white-space:nowrap}
+  @media(max-width:900px){
+    .card-top{flex-wrap:wrap}
+    .top-stats{margin-left:0;width:100%}
+  }
+
   .card-body{display:grid;grid-template-columns:220px 1fr 1fr;gap:0}
   .col-left{border-right:1px solid var(--gray-100);padding:20px}
   .dados-section{margin-bottom:20px}
@@ -173,7 +196,9 @@
   .empty-state h3{font-size:16px;margin-bottom:8px;color:var(--gray-700)}
   .empty-state p{font-size:13px;max-width:440px;margin:0 auto;line-height:1.5}
   @media(max-width:900px){.card-body{grid-template-columns:1fr}.col-left,.col-mid{border-right:none;border-bottom:1px solid var(--gray-100)}}
-  @media print{body{background:#fff;padding:0}.loader,.panel,.search-wrap,.teach,.theme-toggle{display:none}.card-wrap{box-shadow:none}.header{position:static}}
+  @media print{body{background:#fff;padding:0}.loader,.panel,.search-wrap,.teach,.theme-toggle{display:none}.card-wrap{box-shadow:none}.header{position:static}
+    /* o bloco de clima imprime sempre aberto, mesmo se estava recolhido na tela */
+    .cl-body{display:block!important}.cl-head{background:transparent}.cl-chevron{display:none}}
 
   /* ---- topo: ações + logo + botão modo noturno ---- */
   .header-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -196,6 +221,60 @@
   @media(max-width:900px){.regua-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.regua-grid{grid-template-columns:1fr}}
 
+  /* ---- Pesquisa de Clima 2026: Liderança Imediata + e-NPS (recolhível, largura total) ---- */
+  .clima-incard{grid-column:1 / -1;border-top:1px solid var(--gray-100)}
+  .cl-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 20px;background:var(--gray-50);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;transition:.15s}
+  .cl-head:hover{background:var(--gray-100)}
+  .cl-head:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+  .cl-head-left{display:flex;align-items:center;gap:9px;min-width:0}
+  .cl-chevron{font-size:13px;line-height:1;color:var(--gray-700);flex-shrink:0}
+  .cl-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--teal)}
+  .cl-head-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .cl-pill{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--gray-100);color:var(--gray-700);white-space:nowrap}
+  .cl-pill b{font-weight:700;color:var(--gray-900)}
+  .cl-pill.na{background:transparent;border:1px dashed var(--gray-300);color:var(--gray-500)}
+  .cl-body{display:none;padding:9px 20px 12px}
+  .cl-body.show{display:block}
+  /* tira do e-NPS: uma linha só, em vez de caixa destacada */
+  .cl-strip{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:7px;margin-bottom:8px;border-bottom:1px solid var(--gray-100)}
+  .cl-strip-enps{font-size:15px;font-weight:700;line-height:1}
+  .cl-strip-enps.neg{color:var(--gray-900)}
+  .cl-strip-enps.pos{color:#ff2e01}
+  .cl-strip-item{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--gray-500)}
+  .cl-strip-item b{font-size:11.5px;color:var(--gray-900)}
+  .cl-split-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  /* 8 perguntas em duas colunas: 4 linhas em vez de 8 */
+  .cl-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:24px;row-gap:5px}
+  .cl-item{display:flex;align-items:center;gap:8px;min-width:0}
+  .cl-item-q{font-size:10.5px;color:var(--gray-700);line-height:1.2;flex:1;min-width:0}
+  .cl-item-bar{width:70px;height:6px;background:var(--gray-100);border-radius:3px;overflow:hidden;flex-shrink:0}
+  .cl-bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+  .cl-item-pct{font-size:11px;font-weight:700;color:var(--gray-900);width:32px;text-align:right;flex-shrink:0}
+  /* rampa de tom: mesma lógica dos dots de nota (grafite = pior, vermelho = melhor) */
+  .cl-t1{background:#1a1a1a}.cl-t2{background:#807a70}.cl-t3{background:#b5502a}.cl-t4{background:#ff2e01}
+  @media(max-width:900px){.cl-grid{grid-template-columns:1fr}}
+
+  /* ---- MODO TELA CHEIA (apresentação em comitê) ----
+     Sem zoom de propósito: com o clima aberto o card mede ~1118px, já mais alto que
+     uma tela 1080p — ampliar só aumentaria a rolagem. O ganho aqui é esconder os
+     ~280px de topo/busca/carregamento e alargar as colunas.
+     padding-bottom reserva o espaço da barra flutuante, senão ela cobre a régua. */
+  :root.fs body{padding:0 0 56px}
+  :root.fs .header,:root.fs .teach,:root.fs .loader,:root.fs .panel,
+  :root.fs .area-filter-wrap,:root.fs .search-wrap,:root.fs .empty-state{display:none}
+  :root.fs .card-wrap{border-radius:0;box-shadow:none}
+  :root.fs .fs-bar{display:flex}
+  .fs-bar{display:none;position:fixed;bottom:14px;right:16px;z-index:2000;align-items:center;gap:12px;
+          background:rgba(26,26,26,.92);border:1px solid rgba(255,255,255,.18);border-radius:24px;padding:7px 14px}
+  .fs-pos{font-size:11.5px;font-weight:700;color:#fff;white-space:nowrap}
+  .fs-hint{font-size:11.5px;color:rgba(255,255,255,.65);white-space:nowrap}
+  .fs-hint b{color:#fff;font-weight:700}
+  .fs-exit{font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:700;color:#fff;background:transparent;
+           border:1.5px solid rgba(255,255,255,.35);border-radius:20px;padding:3px 10px;cursor:pointer;transition:.15s}
+  .fs-exit:hover{border-color:#ff2e01;color:#ff2e01}
+  .theme-toggle:disabled{opacity:.4;cursor:not-allowed}
+  @media print{.fs-bar{display:none!important}}
+
   /* ---- MODO NOTURNO ---- */
   :root[data-theme="dark"]{
     --bg:#0e1116;--card-bg:#171b22;
@@ -217,6 +296,11 @@
   :root[data-theme="dark"] .area-filter-btn{background:var(--card-bg)}
   :root[data-theme="dark"] .area-dropdown-head input,
   :root[data-theme="dark"] .recon-row select{background:var(--gray-50);color:var(--gray-900)}
+  /* no escuro o grafite puro desapareceria no fundo — clareia os dois tons baixos da rampa */
+  :root[data-theme="dark"] .cl-t1{background:#5c6470}
+  :root[data-theme="dark"] .cl-t2{background:#9b948a}
+  :root[data-theme="dark"] .cl-strip-enps.pos{color:#ff5436}
+  :root[data-theme="dark"] .cl-pill b{color:#dbe4f2}
 </style>
 </head>
 <body>
@@ -226,6 +310,7 @@
     <div class="header-subtitle">Carregue a planilha e a pasta de fotos para visualizar cada perfil</div>
   </div>
   <div class="header-actions">
+    <button class="theme-toggle" id="fs-toggle" title="Apresentar o card em tela cheia" type="button" disabled>⛶ Tela cheia</button>
     <button class="theme-toggle" id="theme-toggle" title="Alternar modo noturno" type="button">🌙 Modo noturno</button>
     <div class="header-logo-wrap">
       <img class="header-logo-img" src="https://yandeh.com/__l5e/assets-v1/7528ad0e-5201-4f6a-a799-76829a16d877/yandeh-logo-branco.png" alt="Yandeh">
@@ -296,6 +381,7 @@
         <span class="tag" id="p-agrupamento">—</span>
       </div>
     </div>
+    <div class="top-stats" id="top-stats"></div>
   </div>
   <div class="card-body">
     <div class="col-left">
@@ -304,6 +390,7 @@
         <div class="gestor-box"><div class="gestor-label">Gestor(a)</div><div class="gestor-name" id="p-gestor">—</div></div>
         <div class="dado-row"><span class="dado-key">Área</span><span class="dado-val" id="p-area">—</span></div>
         <div class="dado-row"><span class="dado-key">Tempo de casa</span><span class="dado-val" id="p-tempo">—</span></div>
+        <div class="dado-row"><span class="dado-key">Cidade</span><span class="dado-val" id="p-cidade">—</span></div>
       </div>
       <div class="dados-section">
         <div class="section-label">Posição na Faixa</div>
@@ -395,6 +482,20 @@
       <div class="section-label" style="margin-top:8px">Informações</div>
       <div class="dado-row"><span class="dado-key">Empresa</span><span class="dado-val" id="p-empresa2">—</span></div>
     </div>
+    <div class="clima-incard">
+      <button type="button" class="cl-head" id="clima-head" aria-expanded="false" aria-controls="clima-body"
+              title="Como o time avalia esta liderança na Pesquisa de Clima 2026. Favorabilidade da dimensão = média das 8 perguntas. e-NPS em pontos (escala −100 a 100).">
+        <span class="cl-head-left">
+          <span class="cl-chevron" id="clima-chevron">▾</span>
+          <span class="cl-title">Pesquisa de Clima 2026 · Liderança Imediata</span>
+        </span>
+        <span class="cl-head-right" id="clima-summary"></span>
+      </button>
+      <div class="cl-body" id="clima-body">
+        <div class="cl-strip" id="clima-strip"></div>
+        <div class="cl-grid" id="clima-grid"></div>
+      </div>
+    </div>
     <div class="regua-incard">
       <div class="section-label">Régua de avaliação</div>
       <div class="regua-grid">
@@ -421,6 +522,12 @@
       </div>
     </div>
   </div>
+</div>
+
+<div class="fs-bar" id="fs-bar">
+  <span class="fs-pos" id="fs-pos">—</span>
+  <span class="fs-hint"><b>←</b> <b>→</b> trocar de pessoa · <b>Esc</b> sair</span>
+  <button class="fs-exit" id="fs-exit" type="button">Sair</button>
 </div>
 
 <div class="empty-state" id="empty-state">
@@ -573,6 +680,7 @@ function parseSheet(arrayBuffer){
     gestor:  find('GESTAO','GESTOR','LIDER','RESPONS'),
     area:    find('AREA','SETOR','DEPART'),
     tempo:   find('TEMPO'),
+    cidade:  find('CIDADE','MUNICIPIO','LOCALIDADE','LOCALIZACAO'),
     admissao: find('DATA DE ADMISSAO','DATA ADMISSAO','ADMISSAO','DATA DE ENTRADA','DATA DE CONTRATACAO','CONTRATACAO'),
     agrup:   find('AGRUP','GRUPO','CLUSTER'),
     faixa:   find('POSICIONAMENTO','FAIXA','COMPA'),
@@ -613,6 +721,7 @@ function parseSheet(arrayBuffer){
       empresa:get(r,idx.empresa), area:get(r,idx.area),
       gestor:get(r,idx.gestor),
       tempo_casa:get(r,idx.tempo), admissao:get(r,idx.admissao),
+      cidade:get(r,idx.cidade),
       agrupamento:get(r,idx.agrup), posicao_faixa:normFaixa(get(r,idx.faixa)),
       mov_tipo:get(r,idx.mov_tipo), mov_data:fmtDate(get(r,idx.mov_data)), mov_pct:normPct(get(r,idx.mov_pct)),
       ninebox_atual:get(r,idx.ninebox), ninebox_ant:get(r,idx.ninebox_ant),
@@ -719,6 +828,14 @@ function renderReconPanel(report){
   if(report.noPhoto.length){
     html+='<div class="recon-group"><div class="recon-group-title">👤 Pessoas sem foto ('+report.noPhoto.length+')</div><div class="recon-note">'+report.noPhoto.map(function(p){return p.nome;}).join(' · ')+'</div></div>';
   }
+  // clima: também não é alarme — a maioria dessas lideranças simplesmente não é linha da base.
+  // Serve para você notar se, ao trocar de planilha, algum líder deixou de casar.
+  if(climaOrphans.length){
+    html+='<div class="recon-group"><div class="recon-group-title">🧭 Lideranças do clima sem correspondência na base ('+climaOrphans.length+')</div><div class="recon-note">'+climaOrphans.join(' · ')+'</div></div>';
+  }
+  if(assessOrphans.length){
+    html+='<div class="recon-group"><div class="recon-group-title">🧭 Lideranças do assessment sem correspondência na base ('+assessOrphans.length+')</div><div class="recon-note">'+assessOrphans.join(' · ')+'</div></div>';
+  }
   document.getElementById('recon-body').innerHTML=html;
 }
 
@@ -726,6 +843,247 @@ function renderReconPanel(report){
 function dotClass(v){ if(v==null)return'dot-null'; if(v<=2)return'dot-1'; if(v===3)return'dot-3'; if(v===4)return'dot-4'; return'dot-5'; }
 var NB_CONFIG={'Insuficiente':{color:'#c1121f',icon:'⚠️',bg:'#fde8e8'},'Pleno':{color:'#457b9d',icon:'✅',bg:'#dbeafe'},'Potencial a Desenvolver':{color:'#f4a261',icon:'🌱',bg:'#fef3c7'},'Forte Desempenho':{color:'#2d6a4f',icon:'⭐',bg:'#d1fae5'},'Excepcional':{color:'#6a0572',icon:'🏆',bg:'#ede9fe'}};
 var NB_RANK={'Insuficiente':1,'Potencial a Desenvolver':2,'Pleno':3,'Forte Desempenho':4,'Excepcional':5};
+
+/* ============================================================================
+   PESQUISA DE CLIMA 2026 — dimensão Liderança Imediata + e-NPS
+   Fonte: "Pesquisa_de_Clima_2026_-_por_Área_Departamento_Liderança (2).xlsx",
+   aba Liderança (29/07/2026). Colunas: D = e-NPS (pts), E/F/G = promotores/
+   neutros/detratores, X..AE = as 8 perguntas da dimensão. Percentuais já
+   arredondados. enps:null = liderança está na pesquisa mas o time não respondeu.
+   Dado embutido de propósito: o card não deve exigir um segundo upload.
+   ============================================================================ */
+/* rótulos curtos porque a grade é de 2 colunas; o texto integral vai no title de cada linha */
+var CLIMA_QUESTIONS=[
+  {curto:'Evolui e inspira o time',      full:'Minha gestão imediata busca evoluir constantemente e inspira o time a se desenvolver junto'},
+  {curto:'Compartilha informações',      full:'Minha gestão imediata compartilha regularmente informações da Yandeh e outros assuntos relevantes para minhas atividades.'},
+  {curto:'Dá feedback',                  full:'Minha gestão imediata dá feedback regularmente sobre como melhorar meu desempenho.'},
+  {curto:'Estimula colaboração',         full:'Minha gestão imediata estimula a colaboração na minha área.'},
+  {curto:'Apoia meu PDI',                full:'Minha gestão imediata me apoia no meu PDI, contribuindo para meu desenvolvimento e evolução de carreira.'},
+  {curto:'Trata com respeito',           full:'Minha gestão imediata me trata com respeito.'},
+  {curto:'Questiona "sempre foi assim"', full:'Minha liderança imediata me incentiva a questionar o "sempre foi assim" e a propor melhorias.'},
+  {curto:'Reconhece bom trabalho',       full:'Sou reconhecido por minha gestão imediata quando realizo um ótimo trabalho.'}
+];
+var CLIMA_LID=[
+ {nome:'Alexandre Contreras Garcia',            enps:-33.3, prom:0,  neu:67, det:33, q:[67,100,100,67,33,100,33,100]},
+ {nome:'Andressa Bianca Bento Giopatto',        enps:null},
+ {nome:'Antonio Carlos Guimaraes',              enps:null},
+ {nome:'Bianca Palacios',                       enps:null},
+ {nome:'Bruna Barbosa Rodrigues',               enps:null},
+ {nome:'Bruna Morand Paixao',                   enps:100,   prom:100,neu:0,  det:0,  q:[100,100,100,100,100,100,100,100]},
+ {nome:'Denis Taveira Laurentino de Lima',      enps:45.5,  prom:64, neu:18, det:18, q:[73,91,64,91,73,91,82,73]},
+ {nome:'Douglas Alves de Brito Neves',          enps:0,     prom:33, neu:33, det:33, q:[67,100,67,67,67,67,67,100]},
+ {nome:'Gabriel Liberman Fernandes',            enps:33.3,  prom:50, neu:33, det:17, q:[83,100,100,100,67,100,100,100]},
+ {nome:'Gisele Pires Silva Almeida',            enps:20,    prom:40, neu:40, det:20, q:[80,100,80,80,60,80,60,80]},
+ {nome:'Guilherme Dello Russo',                 enps:50,    prom:67, neu:17, det:17, q:[100,83,83,83,67,100,100,100]},
+ {nome:'Idineu Spadari Onha',                   enps:null},
+ {nome:'Isabella Montanhal de Araujo Pereira',  enps:null},
+ {nome:'Jackson Junior Marques Almeida',        enps:-20,   prom:0,  neu:80, det:20, q:[100,100,80,100,80,100,100,80]},
+ {nome:'Jesse Souza Cavalcanti Neto',           enps:85.7,  prom:86, neu:14, det:0,  q:[100,100,100,100,100,100,100,100]},
+ {nome:'Joseany Zapala',                        enps:100,   prom:100,neu:0,  det:0,  q:[100,100,100,100,100,100,100,100]},
+ {nome:'Karina Barbosa do Nascimento Yai',      enps:75,    prom:75, neu:25, det:0,  q:[75,100,75,75,75,100,75,100]},
+ {nome:'Leonardo Furlan Fernandes',             enps:0,     prom:33, neu:33, det:33, q:[67,100,67,100,67,100,100,100]},
+ {nome:'Ligia dos Santos Perguer',              enps:75,    prom:75, neu:25, det:0,  q:[75,100,100,100,100,100,100,100]},
+ {nome:'Luana Lopes da Silva',                  enps:61.5,  prom:77, neu:8,  det:15, q:[92,85,85,92,92,92,100,85]},
+ {nome:'Lucas Sanches',                         enps:75,    prom:75, neu:25, det:0,  q:[100,88,75,100,88,100,100,75]},
+ {nome:'Luciana Leme',                          enps:60,    prom:60, neu:40, det:0,  q:[70,90,80,100,100,90,80,90]},
+ {nome:'Luzane Ruscher Souto',                  enps:80,    prom:80, neu:20, det:0,  q:[100,100,100,100,100,100,100,100]},
+ {nome:'Marcelo Ricardo Bueno de Campos',       enps:16.7,  prom:33, neu:50, det:17, q:[67,67,67,100,50,83,100,83]},
+ {nome:'Marcos Garcia da Silva',                enps:75,    prom:75, neu:25, det:0,  q:[100,100,75,100,75,100,100,100]},
+ {nome:'Matheus Lauria Tucci',                  enps:50,    prom:50, neu:50, det:0,  q:[100,100,100,100,50,100,100,100]},
+ {nome:'Paulo Henrique Eid da Fonseca',         enps:42.9,  prom:71, neu:0,  det:29, q:[71,86,57,71,71,100,86,71]},
+ {nome:'Pietro Lamego Querini',                 enps:100,   prom:100,neu:0,  det:0,  q:[100,100,100,100,100,100,100,100]},
+ {nome:'Priscilla Galhanone Assis F. Cardoso',  enps:60,    prom:60, neu:40, det:0,  q:[100,100,100,100,100,100,100,100]},
+ {nome:'Rafael Ferreira Inacio',                enps:85.7,  prom:86, neu:14, det:0,  q:[86,100,100,86,86,100,86,100]},
+ {nome:'Rafael Martins Prado de Oliveira',      enps:50,    prom:50, neu:50, det:0,  q:[67,83,50,83,50,100,67,100]},
+ {nome:'Rafaela Lima Prucoli',                  enps:null},
+ {nome:'Renata Marconi de Souza',               enps:16.7,  prom:33, neu:50, det:17, q:[83,83,83,100,67,100,67,67]},
+ {nome:'Rennan Prado Freitas',                  enps:87.5,  prom:88, neu:13, det:0,  q:[88,100,88,88,75,100,88,88]},
+ {nome:'Ricardo Setton',                        enps:null},
+ {nome:'Ricardo Uehara Goncalves',              enps:null},
+ {nome:'Roberto Marinho Mendonca do Nascimento',enps:null},
+ {nome:'Rodrigo Madeiro dos Santos',            enps:85.7,  prom:86, neu:14, det:0,  q:[100,100,100,100,100,100,100,100]},
+ {nome:'Valdo Melo Lima Guerra',                enps:70,    prom:70, neu:30, det:0,  q:[100,100,90,100,70,100,100,100]},
+ {nome:'Victor Sampaio Tenorio de Mello',       enps:null},
+ {nome:'Weslley Figueiredo',                    enps:60,    prom:60, neu:40, det:0,  q:[100,80,100,60,60,80,100,80]},
+ {nome:'JOAO CLEUSON CICLANO',                  enps:60,    prom:60, neu:40, det:0,  q:[100,80,100,60,60,80,100,80]}
+];
+/* ============================================================================
+   ASSESSMENT DE LIDERANÇA 180° 2026 (LíderY) — média Auto x média Liderados
+   Fonte: "Assessment_Lideranca_2026_DeXpara (1).xlsx", aba "Resumo Geral"
+   (colunas A/B/C/D = líder, média
+    auto, média liderados, qtd avaliadores).
+   auto:null = não respondeu a autoavaliação (aparece como "-" na planilha).
+   ATENÇÃO: estas são as médias de resumo da planilha, sobre 34 respostas. O painel
+   LiderY Report recalcula sobre as 32 perguntas com par comparável, então os dois
+   podem divergir na 2ª decimal. Aqui seguimos a planilha, que é o que você conferiu.
+   ============================================================================ */
+var ASSESS_LID=[
+ {nome:'Alexandre Contreras Garcia',            auto:4.38, lid:3.74, n:4},
+ {nome:'Andressa Bianca Bento Giopatto',        auto:3.59, lid:4.58, n:2},
+ {nome:'Antonio Carlos Guimaraes',              auto:4.97, lid:4.55, n:2},
+ {nome:'Aurelien Alexis Jacomy',                auto:4.19, lid:4.39, n:2},
+ {nome:'Bianca Palacios',                       auto:4.66, lid:3.91, n:2},
+ {nome:'Bruna Barbosa Rodrigues',               auto:4.47, lid:4.06, n:2},
+ {nome:'Bruna Morand Paixao',                   auto:3.75, lid:4.96, n:3},
+ {nome:'Denis Taveira Laurentino de Lima',      auto:4.19, lid:4.12, n:9},
+ {nome:'Douglas Alves de Brito Neves',          auto:4.09, lid:4.05, n:3},
+ {nome:'Gabriel Liberman Fernandes',            auto:4.50, lid:4.56, n:4},
+ {nome:'Gisele Pires Silva Almeida',            auto:4.03, lid:4.26, n:5},
+ {nome:'Guilherme Dello Russo',                 auto:null, lid:4.34, n:4},
+ {nome:'Idineu Spadari Onha',                   auto:4.25, lid:4.15, n:3},
+ {nome:'Isabella Montanhal de Araujo Pereira',  auto:3.72, lid:4.60, n:3},
+ {nome:'Jackson Junior Marques Almeida',        auto:3.97, lid:4.58, n:5},
+ {nome:'Jesse Souza Cavalcanti Neto',           auto:4.16, lid:4.70, n:6},
+ {nome:'Joseany Zapala',                        auto:4.84, lid:4.76, n:3},
+ {nome:'Karina Barbosa do Nascimento Yai',      auto:4.78, lid:4.55, n:7},
+ {nome:'Leila Bonfanti',                        auto:3.47, lid:4.70, n:2},
+ {nome:'Leonardo Furlan Fernandes',             auto:4.47, lid:3.69, n:1},
+ {nome:'Ligia dos Santos Perguer',              auto:4.66, lid:4.71, n:4},
+ {nome:'Luana Lopes da Silva',                  auto:4.28, lid:4.56, n:10},
+ {nome:'Lucas Sanches',                         auto:null, lid:4.21, n:7},
+ {nome:'Luciana Leme',                          auto:3.91, lid:3.97, n:10},
+ {nome:'Luzane Ruscher Souto',                  auto:3.91, lid:4.89, n:5},
+ {nome:'Magno Fernandes',                       auto:4.25, lid:4.55, n:2},
+ {nome:'Marcelo Ricardo Bueno de Campos',       auto:3.88, lid:3.83, n:6},
+ {nome:'Marcos Garcia da Silva',                auto:3.94, lid:4.24, n:5},
+ {nome:'Matheus Lauria Tucci',                  auto:4.19, lid:4.71, n:3},
+ {nome:'Paulo Henrique Eid da Fonseca',         auto:4.56, lid:4.06, n:5},
+ {nome:'Pietro Lamego Querini',                 auto:4.31, lid:4.81, n:2},
+ {nome:'Priscilla Galhanone Assis F. Cardoso',  auto:4.62, lid:4.72, n:4},
+ {nome:'Rafael Ferreira Inacio',                auto:4.56, lid:4.46, n:7},
+ {nome:'Rafaela Lima Prucoli',                  auto:4.28, lid:4.84, n:2},
+ {nome:'Renata Marconi de Souza',               auto:3.97, lid:3.95, n:7},
+ {nome:'Rennan Prado Freitas',                  auto:4.81, lid:4.62, n:6},
+ {nome:'Ricardo Setton',                        auto:4.34, lid:3.28, n:2},
+ {nome:'Ricardo Uehara Goncalves',              auto:4.06, lid:3.22, n:2},
+ {nome:'Roberto Marinho Mendonca do Nascimento',auto:4.12, lid:4.23, n:2},
+ {nome:'Rodolfo Morais do Rego',                auto:4.00, lid:4.38, n:4},
+ {nome:'Rodrigo Filardi Vieira de Souza',       auto:4.28, lid:3.73, n:2},
+ {nome:'Rodrigo Madeiro dos Santos',            auto:4.31, lid:4.93, n:8},
+ {nome:'Valdo Melo Lima Guerra',                auto:5.00, lid:4.55, n:11},
+ {nome:'Victor Sampaio Tenorio de Mello',       auto:3.62, lid:3.53, n:2},
+ {nome:'Weslley Figueiredo',                    auto:3.84, lid:4.02, n:3},
+ {nome:'JOAO CLEUSON CICLANO',                    auto:3.84, lid:4.02, n:3}
+];
+var climaByNorm={};   // pessoa._norm -> registro do clima
+var climaOrphans=[];  // lideranças do clima que não casaram com ninguém da base
+var assessByNorm={};  // pessoa._norm -> registro do assessment
+var assessOrphans=[];
+
+/* Casa uma lista de lideranças -> pessoas da base. Precisa de duas camadas porque a
+   base da AVD usa o nome legal completo e os exports usam a forma curta
+   ("Bruna Morand Paixao" vs "BRUNA MORAND PAIXAO FERREIRA"). Tokens de 1 letra são
+   descartados: o "F." de "Priscilla Galhanone Assis F. Cardoso" não existe no nome
+   completo e faria o subconjunto falhar. Serve clima e assessment — mesma regra. */
+function indexarPorNome(registros){
+  var byNorm={}, orfaos=[], claimed={}, pend=[];
+  registros.forEach(function(c){                       // camada 1: nome idêntico
+    var cn=normalize(c.nome);
+    var exact=DATA.filter(function(p){return p._norm===cn;});
+    if(exact.length===1){ byNorm[exact[0]._norm]=c; claimed[exact[0]._norm]=1; return; }
+    pend.push(c);
+  });
+  pend.forEach(function(c){                            // camada 2: subconjunto de tokens
+    var ct=tokenize(c.nome).filter(function(t){return t.length>1;});
+    if(!ct.length){ orfaos.push(c.nome); return; }
+    var cand=DATA.filter(function(p){
+      if(!p._tokens.length || claimed[p._norm]) return false;
+      var set={}; p._tokens.forEach(function(t){set[t]=1;});
+      return ct.every(function(t){return set[t];});
+    });
+    if(cand.length===1){ byNorm[cand[0]._norm]=c; claimed[cand[0]._norm]=1; }
+    else orfaos.push(c.nome);                          // 0 = não está na base; 2+ = ambíguo, não vincula
+  });
+  return {byNorm:byNorm, orfaos:orfaos};
+}
+/* Roda depois do parseSheet — DATA nasce vazio. As duas fontes são independentes:
+   há líder no assessment que não está no clima (e vice-versa). */
+function buildIndices(){
+  var c=indexarPorNome(CLIMA_LID);  climaByNorm=c.byNorm;  climaOrphans=c.orfaos;
+  var a=indexarPorNome(ASSESS_LID); assessByNorm=a.byNorm; assessOrphans=a.orfaos;
+}
+
+/* rampa de tom igual à dos dots de nota deste card: grafite = pior, vermelho = melhor */
+function climaTone(v){ if(v==null) return 'cl-t2'; if(v<60) return 'cl-t1'; if(v<80) return 'cl-t2'; if(v<90) return 'cl-t3'; return 'cl-t4'; }
+function fmtPct1(v){ return v.toFixed(1).replace('.',',')+'%'; }
+function fmtEnps(v){ return (v>0?'+':(v<0?'−':''))+Math.abs(v).toFixed(1).replace('.',',')+' pts'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function fmtNota(v){ return v.toFixed(2).replace('.',','); }
+function fmtDelta(v){ return (v>0?'+':(v<0?'−':''))+Math.abs(v).toFixed(2).replace('.',','); }
+
+/* Indicadores da faixa preta. Δ = Liderados − Auto: positivo = o time avalia melhor
+   do que a própria pessoa; negativo = ela se avalia acima do que o time enxerga.
+   Quem não tem correspondência simplesmente não ganha o item (nada de "—"). */
+function renderTopStats(p){
+  var el=document.getElementById('top-stats');
+  var cl=climaByNorm[p._norm], as=assessByNorm[p._norm];
+  function quadro(titulo,itens){
+    if(!itens.length) return '';
+    return '<div class="ts-group"><span class="ts-group-t">'+titulo+'</span>'
+         + '<div class="ts-group-body">'+itens.join('')+'</div></div>';
+  }
+  var qClima=[], qAssess=[];
+  if(cl && cl.enps!=null){
+    qClima.push('<div class="ts-item"><span class="ts-k">e-NPS do time</span>'
+      +'<span class="ts-v" title="Pesquisa de Clima 2026 · escala −100 a 100">'+fmtEnps(cl.enps)+'</span></div>');
+  }
+  if(as){
+    var nAval=as.n+(as.n===1?' avaliador':' avaliadores');
+    if(as.auto!=null){
+      qAssess.push('<div class="ts-item"><span class="ts-k">Média auto</span>'
+        +'<span class="ts-v" title="Autoavaliação">'+fmtNota(as.auto)+'</span></div>');
+    }
+    qAssess.push('<div class="ts-item"><span class="ts-k">Média liderados</span>'
+      +'<span class="ts-v" title="'+nAval+'">'+fmtNota(as.lid)+'</span></div>');
+    if(as.auto!=null){
+      var d=as.lid-as.auto;
+      var tip=(d>0?'O time avalia acima da autoavaliação':(d<0?'A autoavaliação está acima do que o time avalia':'Autoavaliação e time praticamente iguais'))
+             +' · '+nAval;
+      qAssess.push('<div class="ts-item ts-delta"><span class="ts-k">Δ liderados − auto</span>'
+        +'<span class="ts-delta-v" title="'+esc(tip)+'">'+fmtDelta(d)+'</span></div>');
+    }
+  }
+  el.innerHTML=quadro('Pesquisa de Clima',qClima)+quadro('Assessment LíderY',qAssess);
+}
+
+function renderClima(p){
+  var head=document.getElementById('clima-head'), body=document.getElementById('clima-body');
+  var sum=document.getElementById('clima-summary');
+  var stripEl=document.getElementById('clima-strip'), gridEl=document.getElementById('clima-grid');
+  // recolhido ao trocar de pessoa — mas em tela cheia já abre, porque lá sobra espaço
+  var fsOn=document.documentElement.classList.contains('fs');
+  body.classList.toggle('show',fsOn);
+  head.setAttribute('aria-expanded',fsOn?'true':'false');
+  document.getElementById('clima-chevron').textContent=fsOn?'▴':'▾';
+  // zera de fato o conteúdo: só esconder deixaria os números da pessoa anterior no DOM
+  stripEl.innerHTML=''; gridEl.innerHTML='';
+
+  var c=climaByNorm[p._norm];
+  if(!c){
+    sum.innerHTML='<span class="cl-pill na">Não encontrado</span>';
+    stripEl.innerHTML='<span class="cl-strip-item">Sem correspondência na base de lideranças da Pesquisa de Clima 2026.</span>';
+    return;
+  }
+  if(c.enps==null || !c.q){
+    sum.innerHTML='<span class="cl-pill na">Sem respostas do time</span>';
+    stripEl.innerHTML='<span class="cl-strip-item">É liderança na pesquisa ('+esc(c.nome)+'), mas o time não registrou respostas.</span>';
+    return;
+  }
+  var fav=c.q.reduce(function(a,b){return a+b;},0)/c.q.length;
+  sum.innerHTML='<span class="cl-pill" title="Média das 8 perguntas da dimensão">Favorabilidade <b>'+fmtPct1(fav)+'</b></span>'
+              +'<span class="cl-pill">e-NPS <b>'+fmtEnps(c.enps)+'</b></span>';
+  stripEl.innerHTML='<span class="cl-strip-enps '+(c.enps<0?'neg':'pos')+'" title="e-NPS do time, em pontos">'+fmtEnps(c.enps)+'</span>'
+    +'<span class="cl-strip-item"><span class="cl-split-dot cl-t4"></span>Promotores <b>'+c.prom+'%</b></span>'
+    +'<span class="cl-strip-item"><span class="cl-split-dot cl-t2"></span>Neutros <b>'+c.neu+'%</b></span>'
+    +'<span class="cl-strip-item"><span class="cl-split-dot cl-t1"></span>Detratores <b>'+c.det+'%</b></span>';
+  gridEl.innerHTML=CLIMA_QUESTIONS.map(function(q,i){
+    var v=c.q[i];
+    return '<div class="cl-item" title="'+esc(q.full)+'"><span class="cl-item-q">'+esc(q.curto)+'</span>'
+      +'<span class="cl-item-bar"><span class="cl-bar-fill '+climaTone(v)+'" style="display:block;width:'+v+'%"></span></span>'
+      +'<span class="cl-item-pct">'+v+'%</span></div>';
+  }).join('');
+}
 function getCellKey(e,v){ if(e==null||v==null)return null; var E=e<=2?1:e===3?2:3; var V=v<=2?1:v===3?2:3; return E+'-'+V; }
 var CELL_MAP={'1-3':'cell-1-4','2-3':'cell-2-4','3-3':'cell-3-4','1-2':'cell-1-3','2-2':'cell-2-3','3-2':'cell-3-3','1-1':'cell-1-1','2-1':'cell-2-1','3-1':'cell-3-1'};
 var NB_FROM_KEY={'1-3':'Potencial a Desenvolver','2-3':'Forte Desempenho','3-3':'Excepcional','1-2':'Insuficiente','2-2':'Pleno','3-2':'Forte Desempenho','1-1':'Insuficiente','2-1':'Insuficiente','3-1':'Potencial a Desenvolver'};
@@ -748,6 +1106,7 @@ function renderCard(p){
   document.getElementById('p-tempo').textContent = adm
     ? tempoCasa(adm)
     : (p.tempo_casa ? String(p.tempo_casa).toLowerCase().replace('anos,','a,').replace('meses','m') : '—');
+  txt('p-cidade',p.cidade);
   txt('p-empresa2',p.empresa);
   txt('p-mov-tipo',p.mov_tipo); txt('p-mov-data',p.mov_data); txt('p-mov-pct',p.mov_pct);
 
@@ -799,6 +1158,19 @@ function renderCard(p){
   var url=photoURLs[p._norm]||manualOverrides[p._norm];
   if(url){ img.src=url; img.style.display='block'; ph.style.display='none'; }
   else { img.src=''; img.style.display='none'; ph.style.display='block'; }
+
+  renderTopStats(p);
+  renderClima(p);
+  document.getElementById('fs-toggle').disabled=false;   // já há card para apresentar
+  updateFsBar();
+}
+
+/* lista de navegação da tela cheia: a mesma que a busca usa (respeita o filtro de área) */
+function listaNavegavel(){ return DATA.filter(function(p){return areaAtiva(p.area);}); }
+function updateFsBar(){
+  var lista=listaNavegavel();
+  var i=currentPerson ? lista.map(function(p){return p._norm;}).indexOf(currentPerson._norm) : -1;
+  document.getElementById('fs-pos').textContent = (i>=0) ? (i+1)+' / '+lista.length : '—';
 }
 
 /* ----- filtro de área (lista com checkboxes em dropdown + busca + marcar/desmarcar todos) ----- */
@@ -902,6 +1274,7 @@ document.getElementById('in-sheet').addEventListener('change',function(ev){
   reader.onload=function(e){
     try{
       DATA=parseSheet(e.target.result);
+      buildIndices();
       areaState={}; areaSearchQuery=''; document.getElementById('area-search-input').value=''; renderAreaFilter();
       reconResolved={};
       document.getElementById('dot-sheet').className='stat-dot ok';
@@ -938,6 +1311,13 @@ document.getElementById('in-photos').addEventListener('change',function(ev){
 });
 
 /* ----- painel: abre/fecha e aplica escolhas manuais ----- */
+document.getElementById('clima-head').addEventListener('click',function(){
+  var b=document.getElementById('clima-body');
+  var aberto=b.classList.toggle('show');
+  this.setAttribute('aria-expanded',aberto?'true':'false');
+  document.getElementById('clima-chevron').textContent=aberto?'▴':'▾';
+});
+
 document.getElementById('recon-head').addEventListener('click',function(e){
   if(e.target.closest('#recon-ok-all')) return; // não alterna abre/fecha ao clicar no botão OK geral
   var b=document.getElementById('recon-body'); b.classList.toggle('show');
@@ -977,7 +1357,10 @@ document.getElementById('recon-body').addEventListener('change',function(e){
     'Auto AVD - Melhor e Mais longe com Dados','Auto AVD - Nota Final - Valores',
     'Nota entregas - Gestor','Encantar o Cliente - Gestor','Sede por Resultados - Gestor',
     'Nós pela Yandeh - Gestor','Inovar para Liderar - Gestor','Ser Dono - Gestor',
-    'Melhor e Mais longe com Dados - Gestor','Nota Final - Valores - Gestor','NINE BOX POSIÇÃO'
+    'Melhor e Mais longe com Dados - Gestor','Nota Final - Valores - Gestor','NINE BOX POSIÇÃO',
+    // LOCALIZAÇÃO fica no fim de propósito: as colunas de nota têm fallback posicional
+    // fixo (col('K'), col('T'), col('AA')…). Inserir no meio deslocaria esses índices.
+    'LOCALIZAÇÃO'
   ];
   // 2 linhas de exemplo (% posição na faixa e percentual de reajuste vêm como decimal: 0,916 = 91,6%)
   var TEMPLATE_ROWS = [
@@ -985,12 +1368,12 @@ document.getElementById('recon-body').addEventListener('change',function(e){
      0.916,'Promoção','15/03/2025',0.08,
      3,3,'Pleno',
      4,4,4,5,4,5,4,4,
-     3,3,3,4,3,3,3,3,'Pleno'],
+     3,3,3,4,3,3,3,3,'Pleno','São Paulo - SP'],
     ['GIROTRADE S/A','João da Silva','Cristóvão da Silva','01/02/2025','PICKING','CONFERENTE PL',
      1.0,'Mérito','01/06/2025',0.12,
      3,4,'Forte Desempenho',
      3,3,3,4,3,3,3,3,
-     4,4,4,4,4,4,4,4,'Forte Desempenho']
+     4,4,4,4,4,4,4,4,'Forte Desempenho','Extrema - MG']
   ];
   document.getElementById('btn-template').addEventListener('click',function(ev){
     ev.preventDefault();
@@ -1001,6 +1384,49 @@ document.getElementById('recon-body').addEventListener('change',function(e){
       XLSX.utils.book_append_sheet(wb,ws,'BASE');
       XLSX.writeFile(wb,'Template_Card_AVD.xlsx');
     }catch(e){ alert('Não consegui gerar o template: '+(e&&e.message?e.message:e)); }
+  });
+})();
+
+/* ----- modo tela cheia (apresentação em comitê) -----
+   O estado real é o do navegador: escutamos fullscreenchange para o Esc nativo
+   também desfazer o layout — não dá para confiar só no clique do botão. */
+(function(){
+  var root=document.documentElement;
+  var btn=document.getElementById('fs-toggle');
+  function isFs(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+  function sync(on){
+    root.classList.toggle('fs',on);
+    btn.innerHTML = on ? '⛶ Sair da tela cheia' : '⛶ Tela cheia';
+    if(currentPerson) renderClima(currentPerson);   // reavalia se o bloco de clima abre ou recolhe
+    updateFsBar();
+  }
+  function enter(){
+    if(!currentPerson) return;                      // sem card selecionado a tela ficaria vazia
+    var req=root.requestFullscreen||root.webkitRequestFullscreen;
+    if(!req){ sync(true); return; }                 // navegador sem a API: aplica só o layout
+    var r=req.call(root);
+    if(r && r.catch) r.catch(function(){ sync(true); });  // bloqueado pelo navegador: idem
+    else if(!isFs()) sync(true);                    // webkit antigo não devolve Promise
+  }
+  function exit(){
+    var ex=document.exitFullscreen||document.webkitExitFullscreen;
+    if(isFs() && ex) ex.call(document); else sync(false);
+  }
+  btn.addEventListener('click',function(){ if(root.classList.contains('fs')) exit(); else enter(); });
+  document.getElementById('fs-exit').addEventListener('click',exit);
+  document.addEventListener('fullscreenchange',function(){ sync(isFs()); });
+  document.addEventListener('webkitfullscreenchange',function(){ sync(isFs()); });
+  // ← → trocam de pessoa sem sair da apresentação
+  document.addEventListener('keydown',function(e){
+    if(!root.classList.contains('fs')) return;
+    if(e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
+    var lista=listaNavegavel(); if(!lista.length||!currentPerson) return;
+    var i=lista.map(function(p){return p._norm;}).indexOf(currentPerson._norm);
+    if(i<0) i=0;
+    var j=(e.key==='ArrowRight') ? (i+1)%lista.length : (i-1+lista.length)%lista.length;
+    e.preventDefault();
+    renderCard(lista[j]);
+    window.scrollTo(0,0);
   });
 })();
 
