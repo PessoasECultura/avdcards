@@ -7,16 +7,67 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap');
+  /* ==========================================================================
+     CAMADA DE MARCA — dois conjuntos de tokens, um por empresa.
+       Yandeh    = :root (padrão)
+       Girotrade = :root[data-brand="giro"]
+     O seletor do topo só troca o atributo data-brand. Por isso NENHUMA cor de
+     marca pode ficar em literal fora deste bloco: um hex solto lá embaixo não
+     acompanha a troca e vira erro de identidade em reunião de comitê.
+
+     Girotrade: paleta oficial do template (tema "Girotrade" do .pptx) —
+     navy #0E0C4F e verde #23D951. O verde puro só entra sobre fundo escuro:
+     sobre branco ele dá ~2:1 de contraste, ilegível num rótulo de 10px em
+     caixa alta. Daí a separação --b-acc (texto/borda no claro, verde
+     escurecido) x --b-acc-vivid (sobre escuro, verde puro da marca).
+     ========================================================================== */
   :root{
     /* ID visual Yandeh: Grafite, Branco, Tons de Cinza, Osso, Red Line */
-    --bg:#f3f0ea;--card-bg:#ffffff;--navy:#1a1a1a;--teal:#ff2e01;--teal-light:#fae7e1;
-    --green:#1a1a1a;--amber:#ff2e01;--red:#ff2e01;
+    --b-ink:#1a1a1a;                  /* superfície escura: faixa do topo, barra da tela cheia */
+    --b-ink-rgb:26,26,26;
+    --b-acc:#ff2e01;                  /* acento em texto/borda sobre fundo claro */
+    --b-acc-vivid:#ff5436;            /* acento sobre fundo escuro (borda do header, hover) */
+    --b-acc-soft:#fae7e1;             /* wash do acento */
+    --b-acc-rgb:255,46,1;
+    --b-ok:#1a1a1a;                   /* semântica "confere/subiu" */
+    --b-warn:#ff2e01;                 /* semântica "pendência/erro/caiu" */
+    --b-tag-fg:#ffb3a3;               /* texto da tag de empresa na faixa escura */
+    --b-r3:#807a70;--b-r4:#b5502a;--b-r5:#ff2e01;          /* rampa das notas (dots) */
+    --b-c1:#1a1a1a;--b-c2:#807a70;--b-c3:#b5502a;--b-c4:#ff2e01;  /* rampa do clima */
+    --b-g1:linear-gradient(135deg,#2e2e2e,#1a1a1a);        /* régua de avaliação 1..5 */
+    --b-g2:linear-gradient(135deg,#5c5c5c,#474747);
+    --b-g3:linear-gradient(135deg,#8a847a,#726c62);
+    --b-g4:linear-gradient(135deg,#c15a34,#a8481f);
+    --b-g5:linear-gradient(135deg,#ff5436,#ff2e01);
+    --bg:#f3f0ea;--card-bg:#ffffff;
     --gray-50:#f7f5f1;--gray-100:#ebe7df;--gray-300:#cfc9bd;--gray-500:#8a847a;--gray-700:#4d4945;--gray-900:#1a1a1a;
-    --nb-insuf:#1a1a1a;--nb-pleno:#807a70;--nb-potenc:#a8916b;--nb-forte:#5c564d;--nb-excep:#ff2e01;
+    /* apelidos herdados: todo o CSS abaixo já usa estes nomes */
+    --navy:var(--b-ink);--teal:var(--b-acc);--teal-light:var(--b-acc-soft);
+    --green:var(--b-ok);--amber:var(--b-warn);--red:var(--b-warn);
+  }
+  :root[data-brand="giro"]{
+    --b-ink:#0E0C4F;
+    --b-ink-rgb:14,12,79;
+    --b-acc:#0B8A33;
+    --b-acc-vivid:#23D951;
+    --b-acc-soft:#e2f7e8;
+    --b-acc-rgb:35,217,81;
+    --b-ok:#0B8A33;
+    --b-warn:#C2410C;                 /* erro/queda NÃO usa o verde da marca */
+    --b-tag-fg:#9ff0b6;
+    --b-r3:#5b6a8a;--b-r4:#127f35;--b-r5:#0F9B3A;
+    --b-c1:#0E0C4F;--b-c2:#5b6a8a;--b-c3:#127f35;--b-c4:#0F9B3A;
+    --b-g1:linear-gradient(135deg,#2a2870,#0E0C4F);
+    --b-g2:linear-gradient(135deg,#4c5680,#3a4266);
+    --b-g3:linear-gradient(135deg,#7d8aa8,#66738f);
+    --b-g4:linear-gradient(135deg,#28a851,#12833a);
+    --b-g5:linear-gradient(135deg,#23D951,#0F9B3A);
+    --bg:#f2f4f8;
+    --gray-50:#f5f7fa;--gray-100:#e6eaf1;--gray-300:#c3cbd9;--gray-500:#78829a;--gray-700:#454e63;--gray-900:#141833;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;padding:92px 24px 24px;color:var(--gray-900)}
-  .header{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#1a1a1a;padding:14px 24px;border-bottom:3px solid #ff2e01;box-shadow:0 2px 14px rgba(0,0,0,.3)}
+  .header{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--b-ink);padding:14px 24px;border-bottom:3px solid var(--b-acc-vivid);box-shadow:0 2px 14px rgba(0,0,0,.3)}
   .header-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:21px;color:#fff;letter-spacing:-.2px}
   .header-subtitle{font-size:12.5px;color:rgba(255,255,255,.55);margin-top:2px}
 
@@ -95,6 +146,10 @@
   .suggestion-item:hover{background:var(--teal-light)}
   .sug-thumb{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--gray-100);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gray-500)}
   .sug-name{font-weight:500;color:var(--gray-900)}.sug-cargo{font-size:12px;color:var(--gray-500)}
+  /* cabeçalho do escopo: fica grudado no topo porque a lista agora rola inteira */
+  .sug-head{position:sticky;top:0;z-index:1;background:var(--gray-50);border-bottom:1px solid var(--gray-100);
+            padding:6px 16px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--gray-500)}
+  .sug-vazio{padding:12px 16px;font-size:12.5px;color:var(--gray-500)}
 
   .card-wrap{display:none;background:var(--card-bg);border-radius:16px;box-shadow:0 2px 20px rgba(0,0,0,.08);overflow:hidden}
   .card-wrap.visible{display:block}
@@ -107,7 +162,7 @@
   .person-cargo{font-size:13px;color:rgba(255,255,255,.65);margin-top:3px}
   .person-tags{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
   .tag{background:rgba(255,255,255,.1);border-radius:20px;padding:3px 10px;font-size:11px;color:rgba(255,255,255,.8);font-weight:500}
-  .tag.empresa{background:rgba(255,46,1,.22);color:#ffb3a3}
+  .tag.empresa{background:rgba(var(--b-acc-rgb),.22);color:var(--b-tag-fg)}
 
   /* ---- indicadores na faixa preta: e-NPS (clima) + Auto/Liderados/Δ (assessment).
      Só aparecem para quem tem correspondência; sem correspondência, nada é renderizado. ---- */
@@ -125,7 +180,7 @@
   .ts-v{font-size:18px;font-weight:700;color:#fff;line-height:1;white-space:nowrap}
   /* delta em evidência sem caixa: só tipografia. O tamanho destaca o número e o
      rótulo em vermelho é a única "pontuação" de cor — regra da marca. */
-  .ts-delta .ts-k{color:#ff5436}
+  .ts-delta .ts-k{color:var(--b-acc-vivid)}
   .ts-delta-v{font-size:24px;font-weight:700;color:#fff;line-height:.85;letter-spacing:-.8px;white-space:nowrap}
   @media(max-width:900px){
     .card-top{flex-wrap:wrap}
@@ -173,13 +228,34 @@
   .score-divider{border:none;border-top:1px solid var(--gray-100);margin:6px 0}
   .score-final-row{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
   .score-final-key{font-size:11px;font-weight:600;color:var(--gray-900)}.score-final-val{font-size:16px;font-weight:700;color:var(--navy)}
-  .dot-1,.dot-2{background:#1a1a1a}.dot-3{background:#807a70}.dot-4{background:#b5502a}.dot-5{background:#ff2e01}.dot-null{background:var(--gray-300)}
+  .dot-1,.dot-2{background:var(--b-ink)}.dot-3{background:var(--b-r3)}.dot-4{background:var(--b-r4)}.dot-5{background:var(--b-r5)}.dot-null{background:var(--gray-300)}
   .valores-table{width:100%;border-collapse:collapse;margin-top:4px}
   .valores-table th{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray-500);text-align:center;padding:3px 4px}
   .valores-table th.vt-name{text-align:left}
   .valores-table td{padding:4px;border-top:1px solid var(--gray-100)}
   .vt-valor{font-size:11px;color:var(--gray-700);line-height:1.2}
   .vt-score{text-align:center;width:34px}
+  .vt-flag{color:var(--b-acc);font-weight:700;cursor:help}
+  .vt-flag.alerta{color:var(--b-warn)}
+  /* de-para recolhido: em comitê o que importa é a nota; o histórico fica a um clique */
+  .vt-depara{margin-top:6px;border-top:1px dashed var(--gray-300);padding-top:5px}
+  .vt-depara summary{font-size:9.5px;color:var(--gray-500);cursor:pointer;list-style:none;user-select:none}
+  .vt-depara summary::-webkit-details-marker{display:none}
+  .vt-depara summary::before{content:'▸ ';color:var(--b-acc);font-weight:700}
+  .vt-depara[open] summary::before{content:'▾ '}
+  .vt-depara summary:hover{color:var(--gray-700)}
+  .dp-list{list-style:none;margin:5px 0 0;padding:0}
+  .dp-list li{font-size:10px;line-height:1.45;color:var(--gray-700);padding:1px 0 1px 8px;border-left:2px solid var(--gray-300)}
+  .dp-list li b{color:var(--gray-900);font-weight:600}
+  .dp-list li i{color:var(--gray-500);font-style:normal}
+  .dp-list li.dp-igual{border-left-color:var(--b-r5)}
+  .dp-list li.dp-adapt{border-left-color:var(--b-r3)}
+  .dp-list li.dp-alerta{border-left-color:var(--b-warn)}
+  .dp-alerta-inline{color:var(--b-warn);font-weight:600}
+  .dp-rodape{font-size:9px;color:var(--gray-500);line-height:1.35;margin-top:5px;font-style:italic}
+  /* na impressão o resumo do <details> some — o conteúdo é aberto via JS no
+     beforeprint, porque CSS não consegue abrir um <details> fechado. */
+  @media print{.vt-depara summary{display:none}.vt-depara{border-top:1px solid var(--gray-300)}}
   .vt-dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:700;color:#fff}
   .ult-ciclo-strip{background:var(--gray-50);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--gray-100)}
   .ult-label{font-size:10px;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
@@ -203,7 +279,7 @@
   /* ---- topo: ações + logo + botão modo noturno ---- */
   .header-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .theme-toggle{display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:8px 14px;border-radius:9px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer;transition:.15s}
-  .theme-toggle:hover{border-color:#ff2e01;color:#ff2e01}
+  .theme-toggle:hover{border-color:var(--b-acc-vivid);color:var(--b-acc-vivid)}
   .header-logo-wrap{display:flex;align-items:center}
   .header-logo-img{height:26px;width:auto;display:block}
 
@@ -213,11 +289,11 @@
   .regua-card{display:flex;flex-direction:column;gap:5px}
   .regua-card-top{border-radius:8px;padding:8px 10px;font-weight:700;font-size:11.5px;color:#fff;display:flex;align-items:center;line-height:1.15}
   .regua-card-desc{font-size:10px;color:var(--gray-700);line-height:1.35}
-  .r1{background:linear-gradient(135deg,#2e2e2e,#1a1a1a)}
-  .r2{background:linear-gradient(135deg,#5c5c5c,#474747)}
-  .r3{background:linear-gradient(135deg,#8a847a,#726c62)}
-  .r4{background:linear-gradient(135deg,#c15a34,#a8481f)}
-  .r5{background:linear-gradient(135deg,#ff5436,#ff2e01)}
+  .r1{background:var(--b-g1)}
+  .r2{background:var(--b-g2)}
+  .r3{background:var(--b-g3)}
+  .r4{background:var(--b-g4)}
+  .r5{background:var(--b-g5)}
   @media(max-width:900px){.regua-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.regua-grid{grid-template-columns:1fr}}
 
@@ -239,7 +315,7 @@
   .cl-strip{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:7px;margin-bottom:8px;border-bottom:1px solid var(--gray-100)}
   .cl-strip-enps{font-size:15px;font-weight:700;line-height:1}
   .cl-strip-enps.neg{color:var(--gray-900)}
-  .cl-strip-enps.pos{color:#ff2e01}
+  .cl-strip-enps.pos{color:var(--b-acc)}
   .cl-strip-item{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--gray-500)}
   .cl-strip-item b{font-size:11.5px;color:var(--gray-900)}
   .cl-split-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -251,7 +327,7 @@
   .cl-bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
   .cl-item-pct{font-size:11px;font-weight:700;color:var(--gray-900);width:32px;text-align:right;flex-shrink:0}
   /* rampa de tom: mesma lógica dos dots de nota (grafite = pior, vermelho = melhor) */
-  .cl-t1{background:#1a1a1a}.cl-t2{background:#807a70}.cl-t3{background:#b5502a}.cl-t4{background:#ff2e01}
+  .cl-t1{background:var(--b-c1)}.cl-t2{background:var(--b-c2)}.cl-t3{background:var(--b-c3)}.cl-t4{background:var(--b-c4)}
   @media(max-width:900px){.cl-grid{grid-template-columns:1fr}}
 
   /* ---- MODO TELA CHEIA (apresentação em comitê) ----
@@ -265,23 +341,51 @@
   :root.fs .card-wrap{border-radius:0;box-shadow:none}
   :root.fs .fs-bar{display:flex}
   .fs-bar{display:none;position:fixed;bottom:14px;right:16px;z-index:2000;align-items:center;gap:12px;
-          background:rgba(26,26,26,.92);border:1px solid rgba(255,255,255,.18);border-radius:24px;padding:7px 14px}
+          background:rgba(var(--b-ink-rgb),.92);border:1px solid rgba(255,255,255,.18);border-radius:24px;padding:7px 14px}
   .fs-pos{font-size:11.5px;font-weight:700;color:#fff;white-space:nowrap}
   .fs-hint{font-size:11.5px;color:rgba(255,255,255,.65);white-space:nowrap}
   .fs-hint b{color:#fff;font-weight:700}
   .fs-exit{font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:700;color:#fff;background:transparent;
            border:1.5px solid rgba(255,255,255,.35);border-radius:20px;padding:3px 10px;cursor:pointer;transition:.15s}
-  .fs-exit:hover{border-color:#ff2e01;color:#ff2e01}
+  .fs-exit:hover{border-color:var(--b-acc-vivid);color:var(--b-acc-vivid)}
   .theme-toggle:disabled{opacity:.4;cursor:not-allowed}
+  /* Zerar tem peso próprio: é o botão que se aperta com pressa quando entra alguém
+     na sala. Borda do acento para achar de relance na faixa escura. */
+  .theme-toggle.zerar{border-color:var(--b-acc-vivid);color:var(--b-acc-vivid)}
+  .theme-toggle.zerar:hover:not(:disabled){background:var(--b-acc-vivid);color:var(--b-ink)}
+  .theme-toggle.zerar:disabled{border-color:rgba(255,255,255,.3);color:#fff}
+  .fs-zerar{border-color:var(--b-acc-vivid);color:var(--b-acc-vivid)}
+  .fs-zerar:hover{background:var(--b-acc-vivid);color:var(--b-ink);border-color:var(--b-acc-vivid)}
   @media print{.fs-bar{display:none!important}}
 
-  /* ---- MODO NOTURNO ---- */
+  /* ---- MODO NOTURNO ----
+     Redefine os tokens de MARCA, não os apelidos: assim o escuro funciona nas
+     duas empresas sem duplicar regra. No escuro o acento pode ser o vivo — o
+     problema de contraste do verde puro só existe sobre branco. */
   :root[data-theme="dark"]{
     --bg:#0e1116;--card-bg:#171b22;
-    --teal:#ff5436;--teal-light:#2e120d;
-    --green:#e6e0d4;--amber:#ff5436;--red:#ff5436;
+    --b-acc:var(--b-acc-vivid);
+    --b-acc-soft:#2e120d;
+    --b-ok:#e6e0d4;
+    --b-warn:var(--b-acc-vivid);
+    --b-c1:#5c6470;--b-c2:#9b948a;   /* grafite puro desapareceria no fundo escuro */
     --gray-50:#1d222b;--gray-100:#2a313c;--gray-300:#3b4453;
     --gray-500:#9aa4b3;--gray-700:#c2cad6;--gray-900:#e8ebf0;
+  }
+  /* ordem importa: esta regra é mais específica que as duas acima, então ganha
+     os tokens que precisam divergir do escuro Yandeh. */
+  :root[data-theme="dark"][data-brand="giro"]{
+    --bg:#0b0f1a;--card-bg:#141a29;
+    --b-acc-soft:#0b2a17;
+    --b-ok:#dbe9f5;
+    --b-warn:#F97A45;
+    /* r3/r4/r5 NÃO clareiam: são chips com numeral branco em cima, e o verde puro
+       da marca só dá ~2:1 com branco. Os valores do claro já rendem ~4:1, mesma
+       faixa do vermelho da Yandeh — clarear aqui pioraria a leitura da nota.
+       A rampa do clima (c1..c4) é barra sem texto, então pode ser viva. */
+    --b-c1:#5b6a8a;--b-c2:#8e99b0;--b-c3:#1eb648;--b-c4:#23D951;
+    --gray-50:#171e2e;--gray-100:#232c3f;--gray-300:#33405a;
+    --gray-500:#8d97ab;--gray-700:#bcc5d6;--gray-900:#e7ecf5;
   }
   :root[data-theme="dark"] .panel-head h3,
   :root[data-theme="dark"] .recon-file,
@@ -296,11 +400,21 @@
   :root[data-theme="dark"] .area-filter-btn{background:var(--card-bg)}
   :root[data-theme="dark"] .area-dropdown-head input,
   :root[data-theme="dark"] .recon-row select{background:var(--gray-50);color:var(--gray-900)}
-  /* no escuro o grafite puro desapareceria no fundo — clareia os dois tons baixos da rampa */
-  :root[data-theme="dark"] .cl-t1{background:#5c6470}
-  :root[data-theme="dark"] .cl-t2{background:#9b948a}
-  :root[data-theme="dark"] .cl-strip-enps.pos{color:#ff5436}
+  /* a rampa do clima no escuro e o e-NPS positivo saíram daqui: agora vêm dos
+     tokens --b-c1/--b-c2 e --b-acc do bloco de modo noturno, para valerem nas
+     duas marcas sem duplicar regra. */
   :root[data-theme="dark"] .cl-pill b{color:#dbe4f2}
+
+  /* ---- SELETOR DE EMPRESA (topo) ---- */
+  .brand-switch{display:inline-flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:2px;gap:2px}
+  .brand-btn{font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;padding:6px 12px;border:none;border-radius:7px;background:transparent;color:rgba(255,255,255,.6);cursor:pointer;transition:.15s;white-space:nowrap}
+  .brand-btn:hover{color:#fff}
+  .brand-btn.is-on{background:var(--b-acc-vivid);color:var(--b-ink)}
+  /* o logo da marca inativa não é só escondido: fica fora do fluxo, senão o
+     wrap do header reserva a largura dos dois. */
+  :root:not([data-brand="giro"]) [data-logo="giro"],
+  :root[data-brand="giro"] [data-logo="yandeh"]{display:none}
+  @media print{.brand-switch{display:none}}
 </style>
 </head>
 <body>
@@ -310,16 +424,35 @@
     <div class="header-subtitle">Carregue a planilha e a pasta de fotos para visualizar cada perfil</div>
   </div>
   <div class="header-actions">
+    <div class="brand-switch" role="group" aria-label="Empresa do card">
+      <button class="brand-btn is-on" type="button" data-brand-set="yandeh"
+              title="Mostra só quem tem EMPRESA = Yandeh, com os 6 valores e o clima da Yandeh">Yandeh</button>
+      <button class="brand-btn" type="button" data-brand-set="giro"
+              title="Mostra só quem tem EMPRESA = Girotrade, com os 6 valores do CD e o clima do Girotrade CD">Girotrade</button>
+    </div>
+    <button class="theme-toggle zerar" id="btn-zerar" type="button" disabled
+            title="Fecha o card e limpa a busca, sem descarregar a planilha (Esc)">⨯ Zerar</button>
     <button class="theme-toggle" id="fs-toggle" title="Apresentar o card em tela cheia" type="button" disabled>⛶ Tela cheia</button>
     <button class="theme-toggle" id="theme-toggle" title="Alternar modo noturno" type="button">🌙 Modo noturno</button>
     <div class="header-logo-wrap">
-      <img class="header-logo-img" src="https://yandeh.com/__l5e/assets-v1/7528ad0e-5201-4f6a-a799-76829a16d877/yandeh-logo-branco.png" alt="Yandeh">
+      <!-- logo branco da Yandeh. Era um PNG em yandeh.com/__l5e/assets-v1/… que hoje
+           responde 404 — o logo estava quebrado. Substituído pelo vetor branco oficial
+           do guia de marca (mesmo desenho do template PPT), embutido como data URI:
+           não depende de rede e não perde nitidez em tela cheia. O <style> interno do
+           SVG original foi removido de propósito — dentro de <img> ele não vazaria,
+           mas a classe MsftOfcThm_* colada no documento era um risco desnecessário. -->
+      <img class="header-logo-img" data-logo="yandeh" src="data:image/svg+xml;utf8,%3Csvg fill='%23fff' viewBox='0 0 2464.2 632.41' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' id='Camada_1' overflow='hidden'%3E%3Cg%3E%3Cpath d='M1508.03 189.98C1477.19 189.98 1447.91 203.91 1429.88 224.8L1416.58 195.55 1368.67 195.55 1368.67 432.33 1429.76 432.33 1429.76 273.55C1444.46 254.05 1466.28 241.51 1488.11 241.51 1516.57 241.51 1549.95 259.15 1549.95 290.72L1549.95 432.33 1611.16 432.33 1611.16 283.3C1611.16 222.47 1559.27 189.98 1508.03 189.98Z'/%3E%3Cpath d='M2362.97 190.04C2332.79 190.04 2299.2 203.97 2281.56 224.86L2281.56 92.27 2275.54 92.27 2221.67 118.42 2221.67 432.39 2281.56 432.39 2281.56 273.61C2295.95 254.11 2317.31 241.57 2338.66 241.57 2366.52 241.57 2404.3 259.21 2404.3 290.78L2404.3 432.39 2464.19 432.39 2464.19 283.36C2464.19 222.53 2413.11 190.04 2362.97 190.04Z'/%3E%3Cpath d='M1846.39 118.21 1846.39 219.08C1828.29 201.44 1799.96 189.83 1769.78 189.83 1706.64 189.83 1653.7 237.65 1653.7 313.79 1653.7 389.93 1706.64 437.75 1769.78 437.75 1799.96 437.75 1828.29 426.14 1846.39 408.51L1855.52 432.18 1906.74 432.18 1906.74 92.06 1900.25 92.06 1846.38 118.21ZM1846.39 361.14C1829.21 377.4 1805.07 387.61 1782.78 387.61 1745.64 387.61 1713.6 359.75 1713.13 313.78 1713.6 267.82 1745.63 239.96 1782.78 239.96 1805.07 239.96 1829.21 250.17 1846.39 266.42L1846.39 361.13Z'/%3E%3Cpath d='M1269 195.55 1257.62 220.51C1238.47 200.63 1210.1 189.98 1179.92 189.98 1116.78 189.98 1063.84 237.8 1063.84 313.94 1063.84 390.08 1116.78 437.9 1179.92 437.9 1210.1 437.9 1238.43 426.29 1256.53 408.66L1265.66 432.33 1316.88 432.33 1316.88 195.55 1269 195.55ZM1256.53 361.29C1239.35 377.55 1215.21 387.76 1192.92 387.76 1155.78 387.76 1123.74 359.9 1123.27 313.93 1123.74 267.97 1155.77 240.11 1192.92 240.11 1215.21 240.11 1239.35 250.32 1256.53 266.57L1256.53 361.28Z'/%3E%3Cpath d='M2069.09 188.51C2000.83 188.51 1949.3 234.01 1949.3 310.62 1949.3 382.12 1994.8 436.44 2075.12 436.44 2108.55 436.44 2145.23 427.16 2164.73 416.47L2142.13 375.95C2121.94 382.29 2102.82 386.44 2082.08 386.44 2041.3 386.44 2013.07 365.97 2006.57 326.14L2178.19 326.14C2178.59 318.28 2179.1 308.44 2179.11 306.91 2179.58 238.19 2140.11 188.52 2069.08 188.52ZM2008.73 283.69C2016.16 253.98 2038.91 235.87 2069.09 235.87 2099.27 235.87 2118.77 253.98 2122.94 283.69L2008.73 283.69Z'/%3E%3Cpath d='M961.39 352.15C947 371.65 925.65 384.18 904.29 384.18 876.44 384.18 838.66 366.54 838.66 334.97L838.66 195.55 778.76 195.55 778.76 344.58C778.76 405.41 834.65 437.91 884.79 437.91 884.89 437.91 884.99 437.91 885.1 437.91 918.23 437.85 942.73 429.11 960.77 412.39 956.42 443.97 938.18 465.22 910.34 473.67 902.88 475.93 888.53 477.78 880.86 477.78 867.09 477.78 852.22 476.09 837.8 473.28L837.8 529C854 532.07 870.66 533.92 886.03 533.92 966.81 533.92 1020.82 482.26 1021.29 401.94L1021.29 195.56 961.39 195.56 961.39 352.16Z'/%3E%3C/g%3E%3Cg%3E%3Crect x='243.25' y='0' rx='19.69' ry='19.69' width='78.75' height='163.64'/%3E%3Crect x='-0.42' y='403.11' rx='19.69' ry='19.69' width='176.27' height='78.75' transform='matrix(0.835903 -0.548877 0.548877 0.835903 -228.46 120.73)'/%3E%3Cpath d='M562.49 158.09 540.95 125.13C535 116.03 522.8 113.47 513.7 119.42L293.21 263.57C286.66 267.86 278.18 267.85 271.64 263.55L52.09 119.49C43 113.52 30.79 116.06 24.83 125.15L3.23 158.07C-2.74 167.16-0.2 179.37 8.89 185.33L234.16 333.16C239.7 336.79 243.04 342.97 243.05 349.59L243.47 612.75C243.49 623.62 252.32 632.42 263.19 632.41L302.56 632.35C313.43 632.33 322.23 623.5 322.22 612.63L321.8 349.65C321.79 342.99 325.14 336.78 330.71 333.14L556.79 185.34C565.89 179.39 568.44 167.19 562.5 158.09Z'/%3E%3Crect x='438.61' y='354.35' rx='19.69' ry='19.69' width='78.75' height='176.27' transform='matrix(0.548877 -0.835903 0.835903 0.548877 -154.23 599.2)'/%3E%3C/g%3E%3C/svg%3E" alt="Yandeh">
+      <!-- logo branco da Girotrade embutido: extraído do template_girotrade.pptx e
+           recortado na bbox do desenho. Embutido de propósito — o card roda offline
+           e a Girotrade não tem CDN público equivalente ao da Yandeh. -->
+      <img class="header-logo-img" data-logo="giro" src="data:image/png;base64,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" alt="Girotrade">
     </div>
   </div>
 </div>
 
 <div class="teach">
   <b>Como funciona:</b> suba a planilha no mesmo formato do template (uma linha por pessoa, com a coluna <b>NOME</b>). O arquivo é lido localmente no seu navegador. Depois selecione a pasta de fotos, onde cada imagem deverá ter o nome das pessoas no arquivo (ex.: <i>Ana Carolina Oliveira.jpg</i>). O sistema relaciona nome ↔ foto sozinho e mostra na <b>Conferência</b> o fotos que não foram encontradas ou que não têm correspondência.
+  <br><b>Uma planilha só para as duas empresas:</b> o botão <b>Yandeh / Girotrade</b> no topo usa a coluna <b>EMPRESA</b> para mostrar só as pessoas daquela empresa, já com os valores e a Pesquisa de Clima correspondentes. As fotos continuam sendo casadas contra a planilha inteira.
 </div>
 
 <div class="loader">
@@ -330,6 +463,7 @@
   <input type="file" id="in-photos" webkitdirectory directory multiple>
   <div class="load-status">
     <span class="stat-pill"><span class="stat-dot" id="dot-sheet"></span><span id="lbl-sheet">Nenhuma planilha</span></span>
+    <span class="stat-pill" id="stat-outros" style="display:none;cursor:help"><span class="stat-dot"></span><span></span></span>
     <span class="stat-pill"><span class="stat-dot" id="dot-photos"></span><span id="lbl-photos">Nenhuma foto</span></span>
   </div>
 </div>
@@ -484,7 +618,7 @@
     </div>
     <div class="clima-incard">
       <button type="button" class="cl-head" id="clima-head" aria-expanded="false" aria-controls="clima-body"
-              title="Como o time avalia esta liderança na Pesquisa de Clima 2026. Favorabilidade da dimensão = média das 8 perguntas. e-NPS em pontos (escala −100 a 100).">
+              title="Como o time avalia esta liderança na Pesquisa de Clima 2026. e-NPS em pontos (escala −100 a 100).">
         <span class="cl-head-left">
           <span class="cl-chevron" id="clima-chevron">▾</span>
           <span class="cl-title">Pesquisa de Clima 2026 · Liderança Imediata</span>
@@ -527,6 +661,7 @@
 <div class="fs-bar" id="fs-bar">
   <span class="fs-pos" id="fs-pos">—</span>
   <span class="fs-hint"><b>←</b> <b>→</b> trocar de pessoa · <b>Esc</b> sair</span>
+  <button class="fs-exit fs-zerar" id="fs-zerar" type="button" title="Esvazia a tela sem sair da apresentação">⨯ Zerar</button>
   <button class="fs-exit" id="fs-exit" type="button">Sair</button>
 </div>
 
@@ -542,8 +677,16 @@
    Lê planilha via XLSX no navegador, casa foto↔pessoa pelo nome do arquivo.
    ============================================================================ */
 
-/* ----- estado ----- */
-var DATA = [];          // uma linha por pessoa
+/* ----- estado -----
+   Uma planilha só, com Yandeh e Girotrade juntas. DATA_ALL guarda TODAS as linhas;
+   DATA é o recorte da empresa ativa e é o que busca, filtro de área e navegação da
+   tela cheia consomem. O casamento de fotos roda contra DATA_ALL de propósito: a
+   pasta de fotos cobre as duas empresas, e filtrar ali transformaria a foto de
+   quem é da outra empresa em "sem correspondência" — alarme falso na Conferência. */
+var DATA_ALL = [];      // tudo que veio da planilha
+var DATA = [];          // uma linha por pessoa, só da empresa ativa
+var DATA_OUTROS = [];   // linhas cuja EMPRESA não é reconhecida (não somem caladas)
+var SHEET_TEM_EMPRESA = true;   // false = planilha sem coluna EMPRESA -> não filtra
 var photoURLs = {};     // nomeNormalizado -> objectURL
 var photoFiles = [];    // {file, baseName, norm, tokens}
 var manualOverrides = {};
@@ -562,6 +705,18 @@ function normalize(s){
 var STOP = {de:1,da:1,do:1,dos:1,das:1,e:1};
 function tokenize(s){ return normalize(s).split(' ').filter(function(t){return t && !STOP[t];}); }
 function stripExt(fn){ return fn.replace(/\.[^.]+$/,''); }
+
+/* ----- EMPRESA da linha -> marca. Casa por trecho, não por igualdade: na base
+   aparece "GIROTRADE S/A", "Girotrade SA", "YANDEH S.A"… e o normalize() já tirou
+   acento, pontuação e caixa. Devolve null quando não reconhece — essas linhas vão
+   para DATA_OUTROS e são avisadas, nunca descartadas em silêncio. ----- */
+function empresaMarca(empresa){
+  var e=normalize(empresa);
+  if(!e) return null;
+  if(e.indexOf('giro')>=0) return 'giro';
+  if(e.indexOf('yandeh')>=0) return 'yandeh';
+  return null;
+}
 
 /* ----- regra de qualidade de nota (do seu dashboard): só 2..5 valem ----- */
 function num(x){ var v=Number(x); return (v===2||v===3||v===4||v===5)?v:null; }
@@ -622,8 +777,12 @@ function tempoCasa(adm){
   return parts.join(', ');
 }
 
-/* ----- 6 valores Yandeh: auto (M..R) e gestor (U..Z) no layout padrão.
-   key = trecho do cabeçalho p/ casar por palavra-chave; auto/gestor = posição de fallback. ----- */
+/* ----- 6 valores por empresa: auto (M..R) e gestor (U..Z) no layout padrão.
+   key = trecho do cabeçalho p/ casar por palavra-chave; auto/gestor = posição de fallback.
+   As duas listas ocupam AS MESMAS colunas — é o de-para acordado, coluna a coluna.
+   O par P/X é o único sem equivalência de sentido ("Inovar para Liderar" não existe
+   no conjunto do CD e "Presença que faz a Diferença" não existe no da Yandeh):
+   está marcado com semEquiv:true e o card avisa na linha. ----- */
 var VALORES_YANDEH = [
   {nome:'Encantar o Cliente',            key:'ENCANTAR O CLIENTE',  auto:'M', gestor:'U'},
   {nome:'Sede por Resultados',           key:'SEDE POR RESULTADOS', auto:'N', gestor:'V'},
@@ -631,6 +790,20 @@ var VALORES_YANDEH = [
   {nome:'Inovar para Liderar',           key:'INOVAR PARA LIDERAR', auto:'P', gestor:'X'},
   {nome:'Ser Dono',                      key:'SER DONO',            auto:'Q', gestor:'Y'},
   {nome:'Melhor e Mais longe com Dados', key:'MELHOR E MAIS LONGE COM DADOS', auto:'R', gestor:'Z'},
+];
+var VALORES_GIRO = [
+  {nome:'Encantar o Cliente',            key:'ENCANTAR O CLIENTE',  auto:'M', gestor:'U',
+   dePara:'Encantar o Cliente',              tipo:'igual'},
+  {nome:'No Ritmo Certo',                key:'NO RITMO CERTO',      auto:'N', gestor:'V',
+   dePara:'Sede por Resultados',             tipo:'adaptado', nota:'execução e cadência'},
+  {nome:'Nós pela Giro',                 key:'NOS PELA GIRO',       auto:'O', gestor:'W',
+   dePara:'Nós pela Yandeh',                 tipo:'igual',    nota:'só muda a marca'},
+  {nome:'Presença que faz a Diferença',  key:'PRESENCA QUE FAZ A DIFERENCA', auto:'P', gestor:'X',
+   dePara:'Inovar para Liderar',             tipo:'semEquiv', nota:'só dividem a coluna'},
+  {nome:'Ser Dono',                      key:'SER DONO',            auto:'Q', gestor:'Y',
+   dePara:'Ser Dono',                        tipo:'igual'},
+  {nome:'Aqui Tudo Tem Lugar',           key:'AQUI TUDO TEM LUGAR', auto:'R', gestor:'Z',
+   dePara:'Melhor e Mais longe com Dados',   tipo:'adaptado', nota:'padrão e método'},
 ];
 
 /* ----- leitura de coluna por palavra-chave (do seu dashboard) ----- */
@@ -704,10 +877,10 @@ function parseSheet(arrayBuffer){
   var iEauto = find('AUTO AVD - NOTA ENTREGAS','AUTO - NOTA ENTREGAS'); if(iEauto<0) iEauto=col('L');
   var iVauto = find('AUTO AVD - NOTA FINAL','AUTO - NOTA FINAL'); if(iVauto<0) iVauto=col('S');
   //  6 valores: auto = "Auto AVD - <valor>", gestor = "<valor> - Gestor" (fallback posicional)
-  var valorIdx = VALORES_YANDEH.map(function(vc){
+  var valorIdx = B().valores.map(function(vc){
     var ia=find('AUTO AVD - '+vc.key,'AUTO - '+vc.key); if(ia<0) ia=col(vc.auto);
     var ig=find(vc.key+' - GESTOR'); if(ig<0) ig=col(vc.gestor);
-    return {nome:vc.nome, ia:ia, ig:ig};
+    return {nome:vc.nome, dePara:vc.dePara||null, tipo:vc.tipo||null, nota:vc.nota||null, ia:ia, ig:ig};
   });
 
   var get = function(r,i){ return (i>=0 && r[i]!=null && r[i]!=='') ? r[i] : null; };
@@ -728,13 +901,16 @@ function parseSheet(arrayBuffer){
       entregas_atual:num(get(r,iEc)), valores_atual:num(get(r,iVc)),
       entregas_ant:num(get(r,iEp)),  valores_ant:num(get(r,iVp)),
       entregas_auto:num(get(r,iEauto)), valores_auto:num(get(r,iVauto)),
-      valores:valorIdx.map(function(v){ return {nome:v.nome, auto:num(get(r,v.ia)), gestor:num(get(r,v.ig))}; }),
+      valores:valorIdx.map(function(v){ return {nome:v.nome, dePara:v.dePara, tipo:v.tipo, nota:v.nota, auto:num(get(r,v.ia)), gestor:num(get(r,v.ig))}; }),
     };
     rec._norm = normalize(rec.nome);
     rec._tokens = tokenize(rec.nome);
     out.push(rec);
   }
   if(!out.length) throw new Error('Nenhuma linha com NOME encontrada.');
+  // sem coluna EMPRESA não há como recortar por empresa: o seletor passa a trocar
+  // só marca e valores, e o card avisa. Melhor que devolver duas listas vazias.
+  SHEET_TEM_EMPRESA = idx.empresa>=0;
   return out;
 }
 
@@ -745,10 +921,10 @@ function runMatching(){
   for(var k=0;k<photoFiles.length;k++){
     var pf=photoFiles[k];
     var fileTokens=pf.tokens;
-    var exact=DATA.filter(function(p){return p._norm===pf.norm;});
+    var exact=DATA_ALL.filter(function(p){return p._norm===pf.norm;});
     if(exact.length===1){ assignPhoto(exact[0],pf); report.exact.push({file:pf.baseName,person:exact[0].nome}); continue; }
     if(exact.length>1){ report.ambiguous.push({file:pf,candidates:exact}); continue; }
-    var sub=DATA.filter(function(p){
+    var sub=DATA_ALL.filter(function(p){
       if(!fileTokens.length||!p._tokens.length) return false;
       var small=fileTokens.length<=p._tokens.length?fileTokens:p._tokens;
       var big  =fileTokens.length<=p._tokens.length?p._tokens:fileTokens;
@@ -759,7 +935,7 @@ function runMatching(){
     if(sub.length>1){ report.ambiguous.push({file:pf,candidates:sub}); continue; }
     report.orphanFile.push(pf);
   }
-  DATA.forEach(function(p){ if(!photoURLs[p._norm] && !manualOverrides[p._norm]) report.noPhoto.push(p); });
+  DATA_ALL.forEach(function(p){ if(!photoURLs[p._norm] && !manualOverrides[p._norm]) report.noPhoto.push(p); });
   return report;
 }
 function assignPhoto(person,pf){ photoURLs[person._norm]=URL.createObjectURL(pf.file); }
@@ -806,7 +982,7 @@ function renderReconPanel(report){
     html+='<div class="recon-group"><div class="recon-group-title">🔍 Fotos sem correspondência ('+orpPend.length+')</div>';
     orpPend.forEach(function(row){
       var pf=row.item;
-      var sel='<select data-orphan="'+row.i+'"><option value="">— atribuir a… —</option>'+DATA.map(function(p){return '<option value="'+p._norm+'">'+p.nome+'</option>';}).join('')+'</select>';
+      var sel='<select data-orphan="'+row.i+'"><option value="">— atribuir a… —</option>'+DATA_ALL.map(function(p){return '<option value="'+p._norm+'">'+p.nome+'</option>';}).join('')+'</select>';
       html+=rowHtml(row.key,URL.createObjectURL(pf.file),pf.baseName,sel,false);
     });
     html+='</div>';
@@ -820,7 +996,7 @@ function renderReconPanel(report){
     });
     orpDone.forEach(function(row){
       var pf=row.item;
-      var sel='<select data-orphan="'+row.i+'" disabled><option value="">— atribuir a… —</option>'+DATA.map(function(p){return '<option value="'+p._norm+'">'+p.nome+'</option>';}).join('')+'</select>';
+      var sel='<select data-orphan="'+row.i+'" disabled><option value="">— atribuir a… —</option>'+DATA_ALL.map(function(p){return '<option value="'+p._norm+'">'+p.nome+'</option>';}).join('')+'</select>';
       html+=rowHtml(row.key,URL.createObjectURL(pf.file),pf.baseName,sel,true);
     });
     html+='</div>';
@@ -853,7 +1029,7 @@ var NB_RANK={'Insuficiente':1,'Potencial a Desenvolver':2,'Pleno':3,'Forte Desem
    Dado embutido de propósito: o card não deve exigir um segundo upload.
    ============================================================================ */
 /* rótulos curtos porque a grade é de 2 colunas; o texto integral vai no title de cada linha */
-var CLIMA_QUESTIONS=[
+var CLIMA_QUESTIONS_YANDEH=[
   {curto:'Evolui e inspira o time',      full:'Minha gestão imediata busca evoluir constantemente e inspira o time a se desenvolver junto'},
   {curto:'Compartilha informações',      full:'Minha gestão imediata compartilha regularmente informações da Yandeh e outros assuntos relevantes para minhas atividades.'},
   {curto:'Dá feedback',                  full:'Minha gestão imediata dá feedback regularmente sobre como melhorar meu desempenho.'},
@@ -863,7 +1039,7 @@ var CLIMA_QUESTIONS=[
   {curto:'Questiona "sempre foi assim"', full:'Minha liderança imediata me incentiva a questionar o "sempre foi assim" e a propor melhorias.'},
   {curto:'Reconhece bom trabalho',       full:'Sou reconhecido por minha gestão imediata quando realizo um ótimo trabalho.'}
 ];
-var CLIMA_LID=[
+var CLIMA_LID_YANDEH=[
  {nome:'Alexandre Contreras Garcia',            enps:-33.3, prom:0,  neu:67, det:33, q:[67,100,100,67,33,100,33,100]},
  {nome:'Andressa Bianca Bento Giopatto',        enps:null},
  {nome:'Antonio Carlos Guimaraes',              enps:null},
@@ -907,6 +1083,44 @@ var CLIMA_LID=[
  {nome:'Weslley Figueiredo',                    enps:60,    prom:60, neu:40, det:0,  q:[100,80,100,60,60,80,100,80]},
  {nome:'JOAO CLEUSON CICLANO',                  enps:60,    prom:60, neu:40, det:0,  q:[100,80,100,60,60,80,100,80]}
 ];
+
+/* ============================================================================
+   PESQUISA DE CLIMA 2026 — GIROTRADE CD
+   Fonte: "Pesquisa de Clima 2026 _ Girotrade CD QR.xlsx", aba "Líder".
+   O export do CD tem formato DIFERENTE do da Yandeh: uma linha por líder x
+   pergunta, com Média (0..10) e % Negativos/Neutros/Positivos. Daí:
+     · q[] = coluna "Positivos (%)", que é a favorabilidade — mesmo sentido dos
+       percentuais da Yandeh. Guardados crus; o card arredonda na exibição.
+     · são 7 perguntas, não 8: o CD não tem a de questionar o "sempre foi assim".
+     · e-NPS não vem pronto. A planilha traz a pergunta "Eu indico a Girotrade..."
+       com %Negativos/Neutros/Positivos, então derivamos e-NPS = %Pos − %Neg,
+       tratando Positivos=promotores e Negativos=detratores. Conferido contra as
+       médias: Erick (0+6+10)/3 = 5,33 e a planilha diz 5,3 — o corte 0-6/7-8/9-10
+       do NPS reproduz a média em todos os 7 líderes com resposta.
+     · resp/ades entram porque aqui a base é pequena: com 3 respondentes, 33% é
+       UMA pessoa. Sem esse denominador o percentual engana.
+   Aurelien: 1 respondente, a plataforma suprime o resultado -> enps:null.
+   ============================================================================ */
+var CLIMA_QUESTIONS_GIRO=[
+  {curto:'Apoia meu crescimento',    full:'Minha gestão imediata apoia o meu crescimento profissional.'},
+  {curto:'Dá feedback',              full:'Minha gestão imediata dá feedback regularmente sobre como melhorar meu desempenho.'},
+  {curto:'Evolui e inspira o time',  full:'Minha gestão imediata demonstra estar em constante desenvolvimento e inspira o time a evoluir junto'},
+  {curto:'Estimula colaboração',     full:'Minha gestão imediata estimula a colaboração na minha área.'},
+  {curto:'Trata com respeito',       full:'Minha gestão imediata me trata com respeito.'},
+  {curto:'Dá contexto e direção',    full:'Recebo contexto suficiente da minha liderança direta para entender os direcionamentos da Girotrade e outros assuntos relevantes para minhas atividades'},
+  {curto:'Reconhece bom trabalho',   full:'Sou reconhecido por minha gestão imediata quando realizo um ótimo trabalho.'}
+];
+var CLIMA_LID_GIRO=[
+ {nome:'Allbert Gereti da Silva',           enps:0,      prom:33, neu:33, det:33, resp:3,  ades:75,    q:[66.67,33.33,33.33,66.67,66.67,33.33,33.33]},
+ {nome:'Anderson Silva dos Santos',         enps:-16.67, prom:17, neu:50, det:33, resp:6,  ades:100,   q:[83.33,66.67,66.67,83.33,100,50,100]},
+ {nome:'Antonio Leonardo da Silva Barbosa', enps:73.33,  prom:73, neu:27, det:0,  resp:15, ades:100,   q:[93.33,86.67,86.67,93.33,93.33,86.67,93.33]},
+ {nome:'Aurelien Alexis Jacomy',            enps:null,   resp:1,  ades:100},
+ {nome:'Cristovao da Silva',                enps:31.25,  prom:56, neu:19, det:25, resp:16, ades:94.12, q:[81.25,56.25,56.25,75,87.5,68.75,87.5]},
+ {nome:'Erick Alexandre de Sousa',          enps:-33.33, prom:33, neu:0,  det:67, resp:3,  ades:75,    q:[66.67,33.33,66.67,66.67,100,66.67,66.67]},
+ {nome:'Marcelo Maciel Pio',                enps:75,     prom:75, neu:25, det:0,  resp:8,  ades:72.73, q:[87.5,87.5,87.5,87.5,100,75,100]},
+ {nome:'Rodolfo Morais do Rego',            enps:-20,    prom:20, neu:40, det:40, resp:5,  ades:100,   q:[60,80,60,60,100,80,80]}
+];
+
 /* ============================================================================
    ASSESSMENT DE LIDERANÇA 180° 2026 (LíderY) — média Auto x média Liderados
    Fonte: "Assessment_Lideranca_2026_DeXpara (1).xlsx", aba "Resumo Geral"
@@ -965,6 +1179,24 @@ var ASSESS_LID=[
  {nome:'Weslley Figueiredo',                    auto:3.84, lid:4.02, n:3},
  {nome:'JOAO CLEUSON CICLANO',                    auto:3.84, lid:4.02, n:3}
 ];
+/* ============================================================================
+   REGISTRO DE MARCAS — o que muda entre Yandeh e Girotrade.
+   As cores vivem no CSS (tokens --b-*); aqui fica só o que é dado.
+   O Assessment LíderY 180° NÃO é por marca de propósito: é um único ciclo, e
+   dois líderes do CD (Aurelien e Rodolfo) responderam nele. Deixar global faz o
+   quadro aparecer para eles nas duas marcas, que é o correto.
+   ============================================================================ */
+var BRANDS={
+  yandeh:{ rotulo:'Yandeh',    valores:VALORES_YANDEH, climaQuestions:CLIMA_QUESTIONS_YANDEH, climaLid:CLIMA_LID_YANDEH,
+           climaFonte:'Pesquisa de Clima 2026 · lideranças Yandeh',
+           template:'Template_Card_AVD_Yandeh.xlsx', empresaEx:'YANDEH S.A' },
+  giro:{   rotulo:'Girotrade', valores:VALORES_GIRO,   climaQuestions:CLIMA_QUESTIONS_GIRO,   climaLid:CLIMA_LID_GIRO,
+           climaFonte:'Pesquisa de Clima 2026 · lideranças Girotrade CD',
+           template:'Template_Card_AVD_Girotrade.xlsx', empresaEx:'GIROTRADE S/A' }
+};
+var BRAND='yandeh';
+function B(){ return BRANDS[BRAND]; }
+
 var climaByNorm={};   // pessoa._norm -> registro do clima
 var climaOrphans=[];  // lideranças do clima que não casaram com ninguém da base
 var assessByNorm={};  // pessoa._norm -> registro do assessment
@@ -999,7 +1231,7 @@ function indexarPorNome(registros){
 /* Roda depois do parseSheet — DATA nasce vazio. As duas fontes são independentes:
    há líder no assessment que não está no clima (e vice-versa). */
 function buildIndices(){
-  var c=indexarPorNome(CLIMA_LID);  climaByNorm=c.byNorm;  climaOrphans=c.orfaos;
+  var c=indexarPorNome(B().climaLid);  climaByNorm=c.byNorm;  climaOrphans=c.orfaos;
   var a=indexarPorNome(ASSESS_LID); assessByNorm=a.byNorm; assessOrphans=a.orfaos;
 }
 
@@ -1059,29 +1291,41 @@ function renderClima(p){
   // zera de fato o conteúdo: só esconder deixaria os números da pessoa anterior no DOM
   stripEl.innerHTML=''; gridEl.innerHTML='';
 
+  var QS=B().climaQuestions;
   var c=climaByNorm[p._norm];
   if(!c){
     sum.innerHTML='<span class="cl-pill na">Não encontrado</span>';
-    stripEl.innerHTML='<span class="cl-strip-item">Sem correspondência na base de lideranças da Pesquisa de Clima 2026.</span>';
+    stripEl.innerHTML='<span class="cl-strip-item">Sem correspondência na base de lideranças da '+esc(B().climaFonte)+'.</span>';
     return;
   }
   if(c.enps==null || !c.q){
     sum.innerHTML='<span class="cl-pill na">Sem respostas do time</span>';
-    stripEl.innerHTML='<span class="cl-strip-item">É liderança na pesquisa ('+esc(c.nome)+'), mas o time não registrou respostas.</span>';
+    var motivo = (c.resp!=null && c.resp<2)
+      ? ' Só '+c.resp+(c.resp===1?' respondente':' respondentes')+' — a plataforma suprime o resultado para preservar o anonimato.'
+      : '';
+    stripEl.innerHTML='<span class="cl-strip-item">É liderança na pesquisa ('+esc(c.nome)+'), mas não há resultado do time.'+motivo+'</span>';
     return;
   }
   var fav=c.q.reduce(function(a,b){return a+b;},0)/c.q.length;
-  sum.innerHTML='<span class="cl-pill" title="Média das 8 perguntas da dimensão">Favorabilidade <b>'+fmtPct1(fav)+'</b></span>'
+  sum.innerHTML='<span class="cl-pill" title="Média das '+QS.length+' perguntas da dimensão">Favorabilidade <b>'+fmtPct1(fav)+'</b></span>'
               +'<span class="cl-pill">e-NPS <b>'+fmtEnps(c.enps)+'</b></span>';
+  // base de respondentes só aparece quando a fonte informa: com time pequeno (3, 4
+  // pessoas) o percentual sozinho engana — 33% é uma pessoa.
+  var base = (c.resp!=null)
+    ? '<span class="cl-strip-item" title="Respondentes desta liderança'+(c.ades!=null?' · adesão '+fmtPct1(c.ades):'')+'">base <b>'+c.resp+'</b></span>'
+    : '';
   stripEl.innerHTML='<span class="cl-strip-enps '+(c.enps<0?'neg':'pos')+'" title="e-NPS do time, em pontos">'+fmtEnps(c.enps)+'</span>'
     +'<span class="cl-strip-item"><span class="cl-split-dot cl-t4"></span>Promotores <b>'+c.prom+'%</b></span>'
     +'<span class="cl-strip-item"><span class="cl-split-dot cl-t2"></span>Neutros <b>'+c.neu+'%</b></span>'
-    +'<span class="cl-strip-item"><span class="cl-split-dot cl-t1"></span>Detratores <b>'+c.det+'%</b></span>';
-  gridEl.innerHTML=CLIMA_QUESTIONS.map(function(q,i){
-    var v=c.q[i];
+    +'<span class="cl-strip-item"><span class="cl-split-dot cl-t1"></span>Detratores <b>'+c.det+'%</b></span>'
+    +base;
+  gridEl.innerHTML=QS.map(function(q,i){
+    // a base da Yandeh já vem arredondada; a do CD vem com decimal (66,67).
+    // arredonda na exibição para as duas lerem igual, sem mexer no dado guardado.
+    var v=c.q[i], vi=Math.round(v);
     return '<div class="cl-item" title="'+esc(q.full)+'"><span class="cl-item-q">'+esc(q.curto)+'</span>'
-      +'<span class="cl-item-bar"><span class="cl-bar-fill '+climaTone(v)+'" style="display:block;width:'+v+'%"></span></span>'
-      +'<span class="cl-item-pct">'+v+'%</span></div>';
+      +'<span class="cl-item-bar"><span class="cl-bar-fill '+climaTone(v)+'" style="display:block;width:'+vi+'%"></span></span>'
+      +'<span class="cl-item-pct">'+vi+'%</span></div>';
   }).join('');
 }
 function getCellKey(e,v){ if(e==null||v==null)return null; var E=e<=2?1:e===3?2:3; var V=v<=2?1:v===3?2:3; return E+'-'+V; }
@@ -1144,11 +1388,36 @@ function renderCard(p){
   // avaliação valor a valor (auto x gestor)
   var vg=document.getElementById('valores-grid');
   if(p.valores && p.valores.length){
+    // O de-para fica visível no card de propósito: é ele que sustenta a leitura do
+    // histórico. Sem isso, comparar a nota de "No Ritmo Certo" com a de "Sede por
+    // Resultados" do ciclo anterior vira adivinhação em plena reunião.
+    var TIPO_TXT={igual:'mesmo valor',adaptado:'valor adaptado',semEquiv:'sem equivalência de sentido'};
     var vrows=p.valores.map(function(v){
       function cel(n){ return '<td class="vt-score"><span class="vt-dot '+dotClass(n)+'">'+(n==null?'—':n)+'</span></td>'; }
-      return '<tr><td class="vt-valor">'+v.nome+'</td>'+cel(v.auto)+cel(v.gestor)+'</tr>';
+      var mark='', tip='';
+      if(v.dePara){
+        tip = 'Ciclo anterior (Yandeh): '+v.dePara+' — '+(TIPO_TXT[v.tipo]||'')+(v.nota?', '+v.nota:'')+'.';
+        mark = ' <span class="vt-flag'+(v.tipo==='semEquiv'?' alerta':'')+'" title="'+esc(tip)+'">*</span>';
+      }
+      return '<tr'+(tip?' title="'+esc(tip)+'"':'')+'><td class="vt-valor">'+esc(v.nome)+mark+'</td>'+cel(v.auto)+cel(v.gestor)+'</tr>';
     }).join('');
-    vg.innerHTML='<table class="valores-table"><thead><tr><th class="vt-name">Valor</th><th>Auto</th><th>Gestor</th></tr></thead><tbody>'+vrows+'</tbody></table>';
+    var comDePara=p.valores.filter(function(v){return v.dePara;});
+    var legenda='';
+    if(comDePara.length){
+      var itens=comDePara.map(function(v){
+        var cls=v.tipo==='semEquiv'?'dp-alerta':(v.tipo==='adaptado'?'dp-adapt':'dp-igual');
+        return '<li class="'+cls+'"><b>'+esc(v.nome)+'</b> ← '+esc(v.dePara)
+             + (v.nota?' <i>('+esc(v.nota)+')</i>':'')+'</li>';
+      }).join('');
+      // em tela cheia sobra espaço e ninguém vai clicar durante a apresentação
+      var aberto=document.documentElement.classList.contains('fs')?' open':'';
+      legenda='<details class="vt-depara"'+aberto+'><summary>* De-para com os valores Yandeh — histórico</summary>'
+        +'<ul class="dp-list">'+itens+'</ul>'
+        +'<div class="dp-rodape">Mesma coluna da planilha nos dois ciclos. Onde o par está marcado em '
+        +'<span class="dp-alerta-inline">laranja</span>, os dois valores só dividem a coluna — a nota não é comparável entre ciclos.</div>'
+        +'</details>';
+    }
+    vg.innerHTML='<table class="valores-table"><thead><tr><th class="vt-name">Valor</th><th>Auto</th><th>Gestor</th></tr></thead><tbody>'+vrows+'</tbody></table>'+legenda;
   } else { vg.innerHTML=''; }
   setUlt('ult-ent',p.entregas_ant); setUlt('ult-val',p.valores_ant);
   var ul=document.getElementById('ult-nb-label');
@@ -1162,6 +1431,7 @@ function renderCard(p){
   renderTopStats(p);
   renderClima(p);
   document.getElementById('fs-toggle').disabled=false;   // já há card para apresentar
+  document.getElementById('btn-zerar').disabled=false;   // e algo para esconder
   updateFsBar();
 }
 
@@ -1245,18 +1515,61 @@ document.getElementById('area-search-input').addEventListener('input',function(e
   areaSearchQuery=e.target.value;
   renderAreaFilter();
 });
-searchInput.addEventListener('input',function(){
-  var q=normalize(searchInput.value);
-  if(q.length<2){ suggList.classList.remove('open'); return; }
-  var matches=DATA.filter(function(p){return p._norm.indexOf(q)>=0 && areaAtiva(p.area);}).slice(0,10);
-  if(!matches.length){ suggList.classList.remove('open'); return; }
-  suggList.innerHTML=matches.map(function(p){
-    var url=photoURLs[p._norm]||manualOverrides[p._norm];
-    var thumb=url?('<img class="sug-thumb" src="'+url+'">'):('<div class="sug-thumb">👤</div>');
-    return '<div class="suggestion-item" data-norm="'+p._norm+'">'+thumb+'<div><div class="sug-name">'+p.nome+'</div><div class="sug-cargo">'+(p.cargo||'')+' · '+(p.area||'')+'</div></div></div>';
-  }).join('');
+/* Lista de sugestões. Duas mudanças em relação ao comportamento antigo (2 letras
+   mínimas + corte em 10):
+   · abre no foco com a lista COMPLETA da(s) área(s) selecionada(s) — é assim que dá
+     para percorrer o time de uma área sem saber o nome de cada um;
+   · sem corte: a lista rola. Cortar em 10 escondia gente sem avisar, que num comitê
+     é pior do que rolar. */
+function areasSelecionadas(){
+  var todas=getAllAreas();
+  var on=todas.filter(function(a){return areaState[a]!==false;});
+  return {todas:todas, on:on, filtrando:todas.length>0 && on.length<todas.length};
+}
+function escopoTexto(n){
+  var a=areasSelecionadas();
+  var ondeArea = !a.todas.length ? '' :
+    (a.on.length===1 ? esc(a.on[0])
+     : (a.filtrando ? a.on.length+' de '+a.todas.length+' áreas' : 'todas as áreas'));
+  return (ondeArea?ondeArea+' · ':'')+n+(n===1?' pessoa':' pessoas');
+}
+function renderSugestoes(lista,cabecalho){
+  if(!lista.length){
+    suggList.innerHTML='<div class="sug-vazio">'+esc(cabecalho)+'</div>';
+    suggList.classList.add('open');
+    return;
+  }
+  suggList.innerHTML='<div class="sug-head">'+esc(cabecalho)+'</div>'
+    +lista.map(function(p){
+      var url=photoURLs[p._norm]||manualOverrides[p._norm];
+      var thumb=url?('<img class="sug-thumb" src="'+url+'">'):('<div class="sug-thumb">👤</div>');
+      var sub=[p.agrupamento,p.area].filter(Boolean).join(' · ');
+      return '<div class="suggestion-item" data-norm="'+p._norm+'">'+thumb
+        +'<div><div class="sug-name">'+esc(p.nome)+'</div><div class="sug-cargo">'+esc(sub)+'</div></div></div>';
+    }).join('');
   suggList.classList.add('open');
-});
+}
+function atualizarSugestoes(){
+  if(!DATA.length){ suggList.classList.remove('open'); return; }
+  var naArea=DATA.filter(function(p){return areaAtiva(p.area);});
+  var q=normalize(searchInput.value);
+  if(!q){                                  // campo vazio: a lista da área inteira
+    renderSugestoes(naArea,escopoTexto(naArea.length));
+    return;
+  }
+  var achou=naArea.filter(function(p){return p._norm.indexOf(q)>=0;});
+  if(!achou.length){
+    // não esconde a lista: mostra quem existe na área, que é o que se quer ver
+    renderSugestoes(naArea,'Nenhum nome com “'+searchInput.value.trim()+'” aqui — mostrando '+escopoTexto(naArea.length));
+    return;
+  }
+  var cab = (achou.length===naArea.length)
+    ? escopoTexto(naArea.length)                                  // todos casaram: não polui
+    : achou.length+' de '+escopoTexto(naArea.length);
+  renderSugestoes(achou,cab);
+}
+searchInput.addEventListener('input',atualizarSugestoes);
+searchInput.addEventListener('focus',atualizarSugestoes);
 suggList.addEventListener('click',function(e){
   var item=e.target.closest('.suggestion-item'); if(!item) return;
   var p=DATA.find(function(x){return x._norm===item.dataset.norm;});
@@ -1268,37 +1581,131 @@ document.addEventListener('click',function(e){ if(!e.target.closest('.search-wra
 document.getElementById('btn-sheet').addEventListener('click',function(){document.getElementById('in-sheet').click();});
 document.getElementById('btn-photos').addEventListener('click',function(){document.getElementById('in-photos').click();});
 
+/* O buffer cru fica guardado porque trocar de empresa exige REPROCESSAR a planilha:
+   os nomes dos 6 valores são casados no parse, não na renderização. Sem isso a
+   troca deixaria os rótulos da empresa anterior colados nas notas. */
+var lastSheetBuffer=null;
+
+/* Recorta DATA_ALL na empresa ativa. Sem coluna EMPRESA não filtra nada — melhor
+   mostrar todo mundo nas duas visões do que esvaziar a busca sem explicação. */
+function recortarPorEmpresa(){
+  if(!SHEET_TEM_EMPRESA){ DATA=DATA_ALL.slice(); DATA_OUTROS=[]; return; }
+  DATA=[]; DATA_OUTROS=[];
+  DATA_ALL.forEach(function(p){
+    var m=empresaMarca(p.empresa);
+    if(m===null) DATA_OUTROS.push(p);
+    else if(m===BRAND) DATA.push(p);
+  });
+}
+
+/* Pilulas de status: quantos da empresa ativa, de quantos no total, e quantas
+   linhas ficaram de fora por EMPRESA não reconhecida. */
+function renderStatusBase(){
+  var lbl=document.getElementById('lbl-sheet');
+  document.getElementById('dot-sheet').className='stat-dot ok';
+  lbl.textContent = SHEET_TEM_EMPRESA
+    ? DATA.length+' em '+B().rotulo+' · '+DATA_ALL.length+' na planilha'
+    : DATA_ALL.length+' colaboradores';
+  lbl.title = SHEET_TEM_EMPRESA
+    ? 'A planilha tem as duas empresas. O seletor no topo troca o recorte.'
+    : 'Planilha sem coluna EMPRESA: não há como recortar por empresa, todos aparecem nas duas visões.';
+  var el=document.getElementById('stat-outros');
+  if(DATA_OUTROS.length){
+    var nomes=DATA_OUTROS.slice(0,15).map(function(p){
+      return p.nome+' ('+(p.empresa==null||p.empresa===''?'em branco':p.empresa)+')';
+    }).join('\n');
+    el.style.display='inline-flex';
+    el.querySelector('.stat-dot').className='stat-dot warn';
+    el.querySelector('span:last-child').textContent=DATA_OUTROS.length+' fora do recorte';
+    el.title='Linhas cuja coluna EMPRESA não é Yandeh nem Girotrade — não aparecem em nenhuma das duas visões:\n\n'
+             +nomes+(DATA_OUTROS.length>15?'\n… e mais '+(DATA_OUTROS.length-15):'');
+  } else { el.style.display='none'; el.title=''; el.querySelector('span:last-child').textContent=''; }
+}
+
+/* Estado-vazio. Se a troca de empresa fechou o card de alguém, diz por quê — senão
+   parece que o card sumiu sozinho. */
+function renderEmptyState(fechouCard){
+  var es=document.getElementById('empty-state');
+  var aviso = fechouCard
+    ? '<p style="margin-top:8px">O card que estava aberto era de outra empresa, então saiu do recorte de <b>'+esc(B().rotulo)+'</b>.</p>'
+    : '';
+  var fora = DATA_OUTROS.length
+    ? '<p style="margin-top:8px;color:var(--amber)"><b>'+DATA_OUTROS.length+(DATA_OUTROS.length===1?' linha':' linhas')+'</b> com a coluna EMPRESA fora de Yandeh/Girotrade não aparecem em nenhuma das duas visões. Passe o mouse em “fora do recorte” acima para ver quem.</p>'
+    : '';
+  var semCol = !SHEET_TEM_EMPRESA
+    ? '<p style="margin-top:8px;color:var(--amber)">Esta planilha não tem coluna <b>EMPRESA</b>: o seletor troca marca e valores, mas mostra todo mundo nas duas visões.</p>'
+    : '';
+  if(!DATA.length){
+    es.innerHTML='<h3>Nenhum colaborador em '+esc(B().rotulo)+'</h3>'
+      +'<p>A planilha tem '+DATA_ALL.length+' linhas, mas nenhuma com EMPRESA de '+esc(B().rotulo)
+      +'. Troque a empresa no topo ou confira a coluna EMPRESA.</p>'+aviso+fora+semCol;
+    return;
+  }
+  // sem coluna EMPRESA não afirmamos que essas pessoas são da marca ativa — elas
+  // só não foram recortadas.
+  var quem = SHEET_TEM_EMPRESA
+    ? DATA.length+' colaborador'+(DATA.length===1?'':'es')+' em <b>'+esc(B().rotulo)+'</b> (de '+DATA_ALL.length+' na planilha)'
+    : DATA.length+' colaborador'+(DATA.length===1?'':'es')+' na planilha';
+  es.innerHTML='<h3>Planilha carregada ✓</h3>'
+    +'<p>'+quem+'. Use a busca acima para abrir um card. As fotos podem ser carregadas agora ou depois — o card funciona sem elas.</p>'
+    +aviso+fora+semCol;
+}
+
+function aplicarPlanilha(buffer,rebrand){
+  var pessoaAntes=currentPerson;
+  try{
+    DATA_ALL=parseSheet(buffer);
+    lastSheetBuffer=buffer;
+    recortarPorEmpresa();
+    buildIndices();
+    // numa troca de empresa a planilha é a mesma: filtro de área e conferência de
+    // fotos já revisados continuam valendo, então não zeramos.
+    if(!rebrand){
+      areaState={}; areaSearchQuery=''; document.getElementById('area-search-input').value='';
+      reconResolved={};
+    }
+    renderAreaFilter();
+    renderStatusBase();
+    searchInput.disabled=false;
+    searchInput.value='';
+    document.getElementById('suggestions-list').classList.remove('open');
+    searchInput.placeholder = DATA.length
+      ? 'Buscar colaborador em '+B().rotulo+'…'
+      : 'Nenhum colaborador em '+B().rotulo+' nesta planilha';
+    var alvo = (rebrand && currentPerson)
+      ? DATA.filter(function(p){return p._norm===currentPerson._norm;})[0]
+      : null;
+    if(alvo){ renderCard(alvo); }                 // mantém a pessoa aberta na troca
+    else{
+      currentPerson=null;
+      document.getElementById('main-card').classList.remove('visible');
+      document.getElementById('fs-toggle').disabled=true;
+      document.getElementById('btn-zerar').disabled=true;
+      // limpa qualquer erro anterior e volta o estado-vazio ao normal
+      document.getElementById('empty-state').style.display='block';
+      renderEmptyState(!!(rebrand && pessoaAntes));
+    }
+    if(photoFiles.length) renderReconPanel(runMatching());
+  }catch(err){
+    document.getElementById('dot-sheet').className='stat-dot warn';
+    document.getElementById('lbl-sheet').textContent='Erro ao ler planilha';
+    document.getElementById('area-filter-wrap').classList.remove('show');
+    document.getElementById('area-dropdown').classList.remove('open');
+    document.getElementById('main-card').classList.remove('visible');
+    // erro GRANDE e visível, com diagnóstico dos cabeçalhos encontrados
+    var es2=document.getElementById('empty-state');
+    es2.style.display='block';
+    var diag = err.diagnostic
+      ? '<p style="margin-top:8px">Cabeçalhos que encontrei na planilha:<br><b style="color:var(--navy)">'+err.diagnostic+'</b></p><p style="margin-top:8px">Renomeie a coluna de nomes para <b>NOME</b> (ou Colaborador), ou me diga qual desses é o nome da pessoa.</p>'
+      : '';
+    es2.innerHTML='<h3 style="color:var(--red)">⚠️ '+err.message+'</h3><p>Confira se a primeira aba tem uma linha de cabeçalho com os nomes das colunas. Você pode baixar o template como referência.</p>'+diag;
+  }
+}
+
 document.getElementById('in-sheet').addEventListener('change',function(ev){
   var file=ev.target.files[0]; if(!file) return;
   var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      DATA=parseSheet(e.target.result);
-      buildIndices();
-      areaState={}; areaSearchQuery=''; document.getElementById('area-search-input').value=''; renderAreaFilter();
-      reconResolved={};
-      document.getElementById('dot-sheet').className='stat-dot ok';
-      document.getElementById('lbl-sheet').textContent=DATA.length+' colaboradores';
-      searchInput.disabled=false; searchInput.placeholder='Buscar colaborador por nome…';
-      // limpa qualquer erro anterior e volta o estado-vazio ao normal
-      var es=document.getElementById('empty-state');
-      es.style.display='block';
-      es.innerHTML='<h3>Planilha carregada ✓</h3><p>'+DATA.length+' colaboradores prontos. Use a busca acima para abrir um card. As fotos podem ser carregadas agora ou depois — o card funciona sem elas.</p>';
-      if(photoFiles.length) renderReconPanel(runMatching());
-    }catch(err){
-      document.getElementById('dot-sheet').className='stat-dot warn';
-      document.getElementById('lbl-sheet').textContent='Erro ao ler planilha';
-      document.getElementById('area-filter-wrap').classList.remove('show');
-      document.getElementById('area-dropdown').classList.remove('open');
-      // erro GRANDE e visível, com diagnóstico dos cabeçalhos encontrados
-      var es2=document.getElementById('empty-state');
-      es2.style.display='block';
-      var diag = err.diagnostic
-        ? '<p style="margin-top:8px">Cabeçalhos que encontrei na planilha:<br><b style="color:var(--navy)">'+err.diagnostic+'</b></p><p style="margin-top:8px">Renomeie a coluna de nomes para <b>NOME</b> (ou Colaborador), ou me diga qual desses é o nome da pessoa.</p>'
-        : '';
-      es2.innerHTML='<h3 style="color:var(--red)">⚠️ '+err.message+'</h3><p>Confira se a primeira aba tem uma linha de cabeçalho com os nomes das colunas. Você pode baixar o template como referência.</p>'+diag;
-    }
-  };
+  reader.onload=function(e){ aplicarPlanilha(e.target.result,false); };
   reader.readAsArrayBuffer(file);
 });
 
@@ -1347,42 +1754,50 @@ document.getElementById('recon-body').addEventListener('change',function(e){
 
 /* ----- botão baixar template: gera o XLSX na hora via SheetJS (mesmo cabeçalho padrão) ----- */
 (function(){
-  // Colunas na ordem do cabeçalho padrão (movimentação agrupada logo após TIPO DE REAJUSTE)
-  var TEMPLATE_HEADER = [
-    'EMPRESA','NOME','GESTÃO','DATA DE ADMISSÃO','ÁREA','AGRUPAMENTO',
-    '% POSICIONAMENTO NA FAIXA','TIPO DE REAJUSTE','DATA DA MOVIMENTAÇÃO','PERCENTUAL',
-    'VALORES ÚLT. CICLO (H2/25)','ENTREGA ÚLT. CICLO (H2/25)','CONCEITO ÚLT. CICLO (H2/25)',
-    'Auto AVD - Nota Entregas','Auto AVD - Encantar o Cliente','Auto AVD - Sede por Resultados',
-    'Auto AVD - Nós pela Yandeh','Auto AVD - Inovar para Liderar','Auto AVD - Ser Dono',
-    'Auto AVD - Melhor e Mais longe com Dados','Auto AVD - Nota Final - Valores',
-    'Nota entregas - Gestor','Encantar o Cliente - Gestor','Sede por Resultados - Gestor',
-    'Nós pela Yandeh - Gestor','Inovar para Liderar - Gestor','Ser Dono - Gestor',
-    'Melhor e Mais longe com Dados - Gestor','Nota Final - Valores - Gestor','NINE BOX POSIÇÃO',
-    // LOCALIZAÇÃO fica no fim de propósito: as colunas de nota têm fallback posicional
-    // fixo (col('K'), col('T'), col('AA')…). Inserir no meio deslocaria esses índices.
-    'LOCALIZAÇÃO'
-  ];
+  // Colunas na ordem do cabeçalho padrão (movimentação agrupada logo após TIPO DE REAJUSTE).
+  // Os 6 valores entram a partir dos nomes da marca ativa, nas mesmas posições
+  // M..R (auto) e U..Z (gestor) — é o de-para por coluna.
+  function templateHeader(){
+    var vs=B().valores;
+    return [
+      'EMPRESA','NOME','GESTÃO','DATA DE ADMISSÃO','ÁREA','AGRUPAMENTO',
+      '% POSICIONAMENTO NA FAIXA','TIPO DE REAJUSTE','DATA DA MOVIMENTAÇÃO','PERCENTUAL',
+      'VALORES ÚLT. CICLO (H2/25)','ENTREGA ÚLT. CICLO (H2/25)','CONCEITO ÚLT. CICLO (H2/25)',
+      'Auto AVD - Nota Entregas'
+    ].concat(vs.map(function(v){ return 'Auto AVD - '+v.nome; }))
+     .concat(['Auto AVD - Nota Final - Valores','Nota entregas - Gestor'])
+     .concat(vs.map(function(v){ return v.nome+' - Gestor'; }))
+     .concat([
+      'Nota Final - Valores - Gestor','NINE BOX POSIÇÃO',
+      // LOCALIZAÇÃO fica no fim de propósito: as colunas de nota têm fallback posicional
+      // fixo (col('K'), col('T'), col('AA')…). Inserir no meio deslocaria esses índices.
+      'LOCALIZAÇÃO'
+     ]);
+  }
   // 2 linhas de exemplo (% posição na faixa e percentual de reajuste vêm como decimal: 0,916 = 91,6%)
-  var TEMPLATE_ROWS = [
-    ['YANDEH S.A','Ana Carolina Gomes de Oliveira','Luana Lopes da Silva','12/05/2023','SAC','ANALISTA JR',
-     0.916,'Promoção','15/03/2025',0.08,
-     3,3,'Pleno',
-     4,4,4,5,4,5,4,4,
-     3,3,3,4,3,3,3,3,'Pleno','São Paulo - SP'],
-    ['GIROTRADE S/A','João da Silva','Cristóvão da Silva','01/02/2025','PICKING','CONFERENTE PL',
-     1.0,'Mérito','01/06/2025',0.12,
-     3,4,'Forte Desempenho',
-     3,3,3,4,3,3,3,3,
-     4,4,4,4,4,4,4,4,'Forte Desempenho','Extrema - MG']
-  ];
+  function templateRows(){
+    var emp=B().empresaEx;
+    return [
+      [emp,'Ana Carolina Gomes de Oliveira','Luana Lopes da Silva','12/05/2023','SAC','ANALISTA JR',
+       0.916,'Promoção','15/03/2025',0.08,
+       3,3,'Pleno',
+       4,4,4,5,4,5,4,4,
+       3,3,3,4,3,3,3,3,'Pleno','São Paulo - SP'],
+      [emp,'João da Silva','Cristóvão da Silva','01/02/2025','PICKING','CONFERENTE PL',
+       1.0,'Mérito','01/06/2025',0.12,
+       3,4,'Forte Desempenho',
+       3,3,3,4,3,3,3,3,
+       4,4,4,4,4,4,4,4,'Forte Desempenho','Extrema - MG']
+    ];
+  }
   document.getElementById('btn-template').addEventListener('click',function(ev){
     ev.preventDefault();
     try{
-      var aoa=[TEMPLATE_HEADER].concat(TEMPLATE_ROWS);
+      var aoa=[templateHeader()].concat(templateRows());
       var ws=XLSX.utils.aoa_to_sheet(aoa);
       var wb=XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb,ws,'BASE');
-      XLSX.writeFile(wb,'Template_Card_AVD.xlsx');
+      XLSX.writeFile(wb,B().template);
     }catch(e){ alert('Não consegui gerar o template: '+(e&&e.message?e.message:e)); }
   });
 })();
@@ -1427,6 +1842,93 @@ document.getElementById('recon-body').addEventListener('change',function(e){
     e.preventDefault();
     renderCard(lista[j]);
     window.scrollTo(0,0);
+  });
+})();
+
+/* CSS não abre um <details> fechado, então o de-para é aberto na mão antes de
+   imprimir e volta a fechar depois — o PDF do comitê tem que sair com o histórico. */
+(function(){
+  var reabrir=[];
+  window.addEventListener('beforeprint',function(){
+    reabrir=[].slice.call(document.querySelectorAll('.vt-depara:not([open])'));
+    reabrir.forEach(function(d){ d.open=true; });
+  });
+  window.addEventListener('afterprint',function(){
+    reabrir.forEach(function(d){ d.open=false; }); reabrir=[];
+  });
+})();
+
+/* ----- ZERAR: tira a pessoa da tela na hora -----
+   Esvazia o que expõe alguém (card, busca, sugestões) e mantém o que custa a
+   recarregar (planilha e fotos). Em tela cheia o estado-vazio é escondido por CSS,
+   então a tela fica literalmente em branco — que é o objetivo quando alguém entra
+   na sala. Não sai da apresentação de propósito: sair projetaria a lista inteira. */
+function zerarTela(){
+  currentPerson=null;
+  document.getElementById('main-card').classList.remove('visible');
+  searchInput.value='';
+  suggList.classList.remove('open');
+  suggList.innerHTML='';
+  document.getElementById('area-dropdown').classList.remove('open');
+  // recolhe o clima para a próxima pessoa não abrir já expandida
+  document.getElementById('clima-body').classList.remove('show');
+  document.getElementById('clima-head').setAttribute('aria-expanded','false');
+  document.getElementById('clima-chevron').textContent='▾';
+  var es=document.getElementById('empty-state');
+  es.style.display='block';
+  es.innerHTML='<h3>Tela limpa</h3><p>Nenhum colaborador em exibição. A planilha'
+    +(photoFiles.length?' e as fotos continuam':' continua')+' carregada'+(photoFiles.length?'s':'')
+    +' — busque um nome acima para abrir outro card.</p>';
+  document.getElementById('btn-zerar').disabled=true;
+  if(!document.documentElement.classList.contains('fs')) document.getElementById('fs-toggle').disabled=true;
+  updateFsBar();
+  if(searchInput.disabled===false) searchInput.blur();   // senão o foco reabre a lista
+}
+document.getElementById('btn-zerar').addEventListener('click',zerarTela);
+document.getElementById('fs-zerar').addEventListener('click',zerarTela);
+document.addEventListener('keydown',function(e){
+  // Esc fora da tela cheia zera; dentro dela o Esc é do navegador (sai do fullscreen)
+  if(e.key!=='Escape') return;
+  if(document.documentElement.classList.contains('fs')) return;
+  var dd=document.getElementById('area-dropdown');
+  if(dd.classList.contains('open') || suggList.classList.contains('open')){
+    dd.classList.remove('open'); suggList.classList.remove('open'); searchInput.blur();
+    return;                                              // 1º Esc fecha o que está aberto
+  }
+  if(currentPerson) zerarTela();                         // 2º Esc zera
+});
+
+/* ----- seletor de empresa (persiste a escolha localmente) -----
+   Trocar de empresa muda três coisas: a marca (via atributo data-brand, o CSS
+   resolve o resto), os 6 valores e a base da Pesquisa de Clima. Como os valores
+   são casados no parse da planilha, a troca REPROCESSA o arquivo já carregado —
+   por isso guardamos o buffer cru em lastSheetBuffer. */
+(function(){
+  var root=document.documentElement;
+  var btns=[].slice.call(document.querySelectorAll('[data-brand-set]'));
+  var sub=document.querySelector('.header-subtitle');
+  var subBase=sub?sub.textContent:'';
+
+  function apply(marca,inicial){
+    if(!BRANDS[marca]) marca='yandeh';
+    BRAND=marca;
+    root.setAttribute('data-brand',marca);
+    btns.forEach(function(b){ b.classList.toggle('is-on',b.dataset.brandSet===marca); });
+    if(sub) sub.textContent=B().rotulo+' · '+subBase;
+    var ch=document.getElementById('clima-head');
+    if(ch) ch.title='Como o time avalia esta liderança na '+B().climaFonte
+      +'. Favorabilidade da dimensão = média das '+B().climaQuestions.length
+      +' perguntas. e-NPS em pontos (escala −100 a 100).';
+    try{ localStorage.setItem('avd-brand',marca); }catch(e){}
+    // já havia planilha carregada: reprocessa com os valores e o clima da nova marca
+    if(!inicial && lastSheetBuffer) aplicarPlanilha(lastSheetBuffer,true);
+  }
+
+  var saved='yandeh';
+  try{ saved=localStorage.getItem('avd-brand')||'yandeh'; }catch(e){}
+  apply(saved,true);
+  btns.forEach(function(b){
+    b.addEventListener('click',function(){ if(BRAND!==b.dataset.brandSet) apply(b.dataset.brandSet,false); });
   });
 })();
 
