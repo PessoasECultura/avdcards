@@ -718,8 +718,11 @@ function empresaMarca(empresa){
   return null;
 }
 
-/* ----- regra de qualidade de nota (do seu dashboard): só 2..5 valem ----- */
-function num(x){ var v=Number(x); return (v===2||v===3||v===4||v===5)?v:null; }
+/* ----- nota válida: 1 a 5 inteiros, igual à régua que o próprio card mostra
+   (1 = Insatisfatório). A regra antiga começava no 2 e engolia a nota 1 — na base
+   oficial isso apagava a nota de "Melhor e Mais longe com Dados" da Thaina.
+   Vazio, 0 e texto ("Não Elegível") continuam virando "—": não são nota. ----- */
+function num(x){ var v=Number(x); return (v===1||v===2||v===3||v===4||v===5)?v:null; }
 
 /* ----- % posição na faixa: este Excel guarda como decimal (0,75 = 75%).
    Normaliza para texto "75,0%" e mantém intacta a fórmula da barra (que faz parseFloat). ----- */
