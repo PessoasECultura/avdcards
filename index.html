@@ -784,32 +784,45 @@ function tempoCasa(adm){
    no conjunto do CD e "Presença que faz a Diferença" não existe no da Yandeh):
    está marcado com semEquiv:true e o card avisa na linha. ----- */
 var VALORES_YANDEH = [
-  {nome:'Encantar o Cliente',            key:'ENCANTAR O CLIENTE',  auto:'M', gestor:'U'},
-  {nome:'Sede por Resultados',           key:'SEDE POR RESULTADOS', auto:'N', gestor:'V'},
-  {nome:'Nós pela Yandeh',               key:'NOS PELA YANDEH',     auto:'O', gestor:'W'},
-  {nome:'Inovar para Liderar',           key:'INOVAR PARA LIDERAR', auto:'P', gestor:'X'},
-  {nome:'Ser Dono',                      key:'SER DONO',            auto:'Q', gestor:'Y'},
-  {nome:'Melhor e Mais longe com Dados', key:'MELHOR E MAIS LONGE COM DADOS', auto:'R', gestor:'Z'},
+  {nome:'Encantar o Cliente',            key:'ENCANTAR O CLIENTE',  curto:'ENCANTAR',   auto:'O', gestor:'W'},
+  {nome:'Sede por Resultados',           key:'SEDE POR RESULTADOS', curto:'SEDE RES',   auto:'P', gestor:'X'},
+  {nome:'Nós pela Yandeh',               key:'NOS PELA YANDEH',     curto:'NOS YANDEH', auto:'Q', gestor:'Y'},
+  {nome:'Inovar para Liderar',           key:'INOVAR PARA LIDERAR', curto:'INOVAR',     auto:'R', gestor:'Z'},
+  {nome:'Ser Dono',                      key:'SER DONO',            curto:'SER DONO',   auto:'S', gestor:'AA'},
+  {nome:'Melhor e Mais longe com Dados', key:'MELHOR E MAIS LONGE COM DADOS', curto:'DADOS', auto:'T', gestor:'AB'},
 ];
 var VALORES_GIRO = [
-  {nome:'Encantar o Cliente',            key:'ENCANTAR O CLIENTE',  auto:'M', gestor:'U',
+  {nome:'Encantar o Cliente',            key:'ENCANTAR O CLIENTE',  auto:'O', gestor:'W',
    dePara:'Encantar o Cliente',              tipo:'igual'},
-  {nome:'No Ritmo Certo',                key:'NO RITMO CERTO',      auto:'N', gestor:'V',
+  {nome:'No Ritmo Certo',                key:'NO RITMO CERTO',      auto:'P', gestor:'X',
    dePara:'Sede por Resultados',             tipo:'adaptado', nota:'execução e cadência'},
-  {nome:'Nós pela Giro',                 key:'NOS PELA GIRO',       auto:'O', gestor:'W',
+  {nome:'Nós pela Giro',                 key:'NOS PELA GIRO',       auto:'Q', gestor:'Y',
    dePara:'Nós pela Yandeh',                 tipo:'igual',    nota:'só muda a marca'},
-  {nome:'Presença que faz a Diferença',  key:'PRESENCA QUE FAZ A DIFERENCA', auto:'P', gestor:'X',
+  {nome:'Presença que faz a Diferença',  key:'PRESENCA QUE FAZ A DIFERENCA', auto:'R', gestor:'Z',
    dePara:'Inovar para Liderar',             tipo:'semEquiv', nota:'só dividem a coluna'},
-  {nome:'Ser Dono',                      key:'SER DONO',            auto:'Q', gestor:'Y',
+  {nome:'Ser Dono',                      key:'SER DONO',            auto:'S', gestor:'AA',
    dePara:'Ser Dono',                        tipo:'igual'},
-  {nome:'Aqui Tudo Tem Lugar',           key:'AQUI TUDO TEM LUGAR', auto:'R', gestor:'Z',
+  {nome:'Aqui Tudo Tem Lugar',           key:'AQUI TUDO TEM LUGAR', auto:'T', gestor:'AB',
    dePara:'Melhor e Mais longe com Dados',   tipo:'adaptado', nota:'padrão e método'},
 ];
 
-/* ----- leitura de coluna por palavra-chave (do seu dashboard) ----- */
+/* ----- leitura de coluna por palavra-chave (do seu dashboard) -----
+   A busca é CHAVE POR CHAVE, na ordem em que foram passadas: a chave mais
+   específica ganha, não importa em que coluna ela esteja. Antes a varredura era
+   por COLUNA (para cada coluna, testava todas as chaves), então uma chave
+   genérica no fim da lista podia sequestrar uma coluna anterior — era assim que
+   'DATA' casava com "DATA DE ADMISSÃO" (col. D) antes de a varredura chegar em
+   "DATA DA MOVIMENTAÇÃO" (col. I). Ordem das chaves = ordem de prioridade. */
 function makeFinder(head){
-  return function(){ var keys=[].slice.call(arguments);
-    return head.findIndex(function(h){ return keys.some(function(k){ return h.indexOf(k)>=0; }); }); };
+  return function(){
+    var keys=[].slice.call(arguments);
+    for(var k=0;k<keys.length;k++){
+      var chave=keys[k];
+      var i=head.findIndex(function(h){ return h.indexOf(chave)>=0; });
+      if(i>=0) return i;
+    }
+    return -1;
+  };
 }
 
 /* ----- PARSE da planilha ----- */
@@ -859,27 +872,42 @@ function parseSheet(arrayBuffer){
     faixa:   find('POSICIONAMENTO','FAIXA','COMPA'),
     ninebox: find('NINE BOX','NINEBOX','QUADRANTE'),         // AB - nine box atual
     mov_tipo: find('TIPO DE REAJUSTE','TIPO REAJUSTE','TIPO DE MOVIMENTA','TIPO MOVIMENTA','TIPO'),
-    mov_data: find('DATA DA MOVIMENTA','DATA MOVIMENTA','DATA DO REAJUSTE','DATA REAJUSTE','DATA'),
+    // 'DATA' sozinho saiu da lista: é a chave que trazia a admissão (col. D) para cá.
+    mov_data: find('DATA DA MOVIMENTA','DATA MOVIMENTA','DATA DA ULTIMA MOVIMENTA','DATA ULTIMA MOVIMENTA','DATA DO REAJUSTE','DATA REAJUSTE','DATA DE REAJUSTE'),
     mov_pct:  find('PERCENTUAL DE AUMENTO','PERCENTUAL DE REAJUSTE','% DE AUMENTO','% DE REAJUSTE','% REAJUSTE','AUMENTO','PERCENTUAL'),
   };
-  // Nine box do ciclo anterior: K = CONCEITO ÚLT. CICLO (logo após ENTREGA ÚLT.).
-  idx.ninebox_ant = find('CONCEITO ULT','CONCEITO'); if(idx.ninebox_ant<0) idx.ninebox_ant = col('K');
+  // Sem cabeçalho de movimentação reconhecível, cai na col. I — que é onde a data
+  // da última movimentação mora nesta planilha (col. D é a admissão). O segundo
+  // teste é cinto de segurança: se por acaso a busca voltar a apontar para a mesma
+  // coluna da admissão, é erro por definição.
+  if(idx.mov_data<0 || idx.mov_data===idx.admissao) idx.mov_data = col('I');
+
+  // Nine box do ciclo anterior: M = CONCEITO ÚLT. CICLO (logo após ENTREGA ÚLT.).
+  idx.ninebox_ant = find('CONCEITO ULT','CONCEITO'); if(idx.ninebox_ant<0) idx.ninebox_ant = col('M');
 
   // Notas (regra do modelo mantida: só 2..5 valem — ver num()).
-  //  Ciclo anterior:  I = VALORES ÚLT. CICLO / J = ENTREGA ÚLT. CICLO
-  var iVp = find('VALORES ULT','VALOR ULT','VALORES ANT'); if(iVp<0) iVp=col('I');
-  var iEp = find('ENTREGA ULT','ENTREGAS ULT','ENTREGA ANT'); if(iEp<0) iEp=col('J');
-  //  Avaliação do gestor (atual): T = Nota entregas - Gestor / AA = Nota Final - Valores - Gestor
-  //  (cuidado: 'ENTREGAS - GESTOR' é único; 'NOTA ENTREGAS' sozinho casaria também com a auto na L)
-  var iEc = find('ENTREGAS - GESTOR'); if(iEc<0) iEc=col('T');
-  var iVc = find('VALORES - GESTOR'); if(iVc<0) iVc=col('AA');
-  //  Autoavaliação: L = Auto AVD - Nota Entregas / S = Auto AVD - Nota Final - Valores
-  var iEauto = find('AUTO AVD - NOTA ENTREGAS','AUTO - NOTA ENTREGAS'); if(iEauto<0) iEauto=col('L');
-  var iVauto = find('AUTO AVD - NOTA FINAL','AUTO - NOTA FINAL'); if(iVauto<0) iVauto=col('S');
-  //  6 valores: auto = "Auto AVD - <valor>", gestor = "<valor> - Gestor" (fallback posicional)
+  //  Ciclo anterior:  K = VALORES ÚLT. CICLO / L = ENTREGA ÚLT. CICLO
+  var iVp = find('VALORES ULT','VALOR ULT','VALORES ANT'); if(iVp<0) iVp=col('K');
+  var iEp = find('ENTREGA ULT','ENTREGAS ULT','ENTREGA ANT'); if(iEp<0) iEp=col('L');
+  //  Avaliação do gestor (atual): V = entregas / AC = Nota Final - Valores.
+  //  Duas famílias de cabeçalho convivem na mesma posição de coluna:
+  //    Template Yandeh : "Nota entregas - Gestor"  · "Nota Final - Valores - Gestor"
+  //    DeXPara (oficial): "Gest. Entregas (QR✓)"   · "GestorAVD - Nota Final - Valores"
+  //  Sem as chaves do DeXPara a busca falhava e caía no fallback posicional — que
+  //  estava 2 colunas à esquerda e lia "Auto Dados" como entrega do gestor.
+  var iEc = find('ENTREGAS - GESTOR','GEST. ENTREGAS','GEST ENTREGAS','GESTOR - ENTREGAS'); if(iEc<0) iEc=col('V');
+  var iVc = find('VALORES - GESTOR','GESTORAVD - NOTA FINAL','GESTOR AVD - NOTA FINAL','GEST. NOTA FINAL'); if(iVc<0) iVc=col('AC');
+  //  Autoavaliação: N = entregas / U = Nota Final - Valores
+  var iEauto = find('AUTO AVD - NOTA ENTREGAS','AUTO - NOTA ENTREGAS','AUTO ENTREGAS'); if(iEauto<0) iEauto=col('N');
+  var iVauto = find('AUTO AVD - NOTA FINAL','AUTO - NOTA FINAL'); if(iVauto<0) iVauto=col('U');
+  //  6 valores: "Auto AVD - <valor>" / "<valor> - Gestor" (template) ou
+  //  "Auto <curto> (QR)" / "Gest. <curto> (QR)" (DeXPara). Fallback posicional por último.
   var valorIdx = B().valores.map(function(vc){
-    var ia=find('AUTO AVD - '+vc.key,'AUTO - '+vc.key); if(ia<0) ia=col(vc.auto);
-    var ig=find(vc.key+' - GESTOR'); if(ig<0) ig=col(vc.gestor);
+    var ka=['AUTO AVD - '+vc.key,'AUTO - '+vc.key];
+    var kg=[vc.key+' - GESTOR'];
+    if(vc.curto){ ka.push('AUTO '+vc.curto); kg.push('GEST. '+vc.curto, 'GEST '+vc.curto); }
+    var ia=find.apply(null,ka); if(ia<0) ia=col(vc.auto);
+    var ig=find.apply(null,kg); if(ig<0) ig=col(vc.gestor);
     return {nome:vc.nome, dePara:vc.dePara||null, tipo:vc.tipo||null, nota:vc.nota||null, ia:ia, ig:ig};
   });
 
