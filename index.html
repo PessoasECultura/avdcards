@@ -722,7 +722,14 @@ function empresaMarca(empresa){
    (1 = Insatisfatório). A regra antiga começava no 2 e engolia a nota 1 — na base
    oficial isso apagava a nota de "Melhor e Mais longe com Dados" da Thaina.
    Vazio, 0 e texto ("Não Elegível") continuam virando "—": não são nota. ----- */
-function num(x){ var v=Number(x); return (v===1||v===2||v===3||v===4||v===5)?v:null; }
+function num(x){ 
+  if(x==null || x==='') return null;
+  if(typeof x === 'object' && x.t === 'e') return null;
+  var v=Number(String(x).trim());
+  if(isNaN(v)) return null;
+  return (v===1||v===2||v===3||v===4||v===5)?v:null; 
+}
+
 
 /* ----- % posição na faixa: este Excel guarda como decimal (0,75 = 75%).
    Normaliza para texto "75,0%" e mantém intacta a fórmula da barra (que faz parseFloat). ----- */
@@ -936,6 +943,11 @@ function parseSheet(arrayBuffer){
     };
     rec._norm = normalize(rec.nome);
     rec._tokens = tokenize(rec.nome);
+    // Se a nota final de valores estiver vazia, calcula a média dos 6 valores
+    if(rec.valores_auto==null && rec.valores && rec.valores.length){
+      var notasAuto=rec.valores.map(function(v){return v.auto;}).filter(function(n){return n!=null;});
+      if(notasAuto.length) rec.valores_auto=Math.round(notasAuto.reduce(function(a,b){return a+b;})/notasAuto.length);
+    }
     out.push(rec);
   }
   if(!out.length) throw new Error('Nenhuma linha com NOME encontrada.');
